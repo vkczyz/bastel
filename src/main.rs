@@ -55,6 +55,10 @@ fn window_size_dependent_setup(
 }
 
 fn main() {
+    const TITLE: &str = "BASTEL";
+    const WIDTH: u32 = 800;
+    const HEIGHT: u32 = 800;
+
     let instance = Instance::new(
         None,
         Version::V1_1,
@@ -84,13 +88,13 @@ fn main() {
 
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new().build(&event_loop).unwrap();
-    window.set_title("BASTEL");
+    window.set_title(TITLE);
     let surface = create_vk_surface_from_handle(window, instance.clone()).unwrap();
 
     let caps = surface.capabilities(physical)
         .expect("Failed to get surface capabilities");
 
-    let dims = caps.current_extent.unwrap_or([800, 600]);
+    let dims = caps.current_extent.unwrap_or([WIDTH, HEIGHT]);
     let alpha = caps.supported_composite_alpha.iter().next().unwrap();
     let format = caps.supported_formats[0].0;
 
@@ -107,9 +111,9 @@ fn main() {
     vulkano::impl_vertex!(Vertex, position);
 
     let vertices = vec!(
-        Vertex{ position: [-0.5, 1.0] },
-        Vertex{ position: [-0.1, -0.5] },
-        Vertex{ position: [0.2, 0.5] },
+        Vertex{ position: [-0.5, -0.5] },
+        Vertex{ position: [0.5, -0.5] },
+        Vertex{ position: [0.0, 0.5] },
     );
 
     let vertex_buffer = CpuAccessibleBuffer::from_iter(
@@ -142,7 +146,7 @@ fn main() {
 
     let viewport = Viewport {
         origin: [0.0, 0.0],
-        dimensions: [1024.0, 1024.0],
+        dimensions: [WIDTH as f32, HEIGHT as f32],
         depth_range: 0.0..1.0,
     };
 
@@ -210,7 +214,7 @@ fn main() {
                     recreate_swapchain = true;
                 }
 
-                let clear_values = vec![[1.0, 0.0, 1.0].into()];
+                let clear_values = vec![[0.1, 0.1, 0.1].into()];
 
                 let mut builder = AutoCommandBufferBuilder::primary(
                     device.clone(),
