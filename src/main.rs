@@ -6,6 +6,7 @@ use vulkano::instance::Instance;
 use vulkano::device::{
     physical::PhysicalDevice,
     Device,
+    Features,
 };
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer, TypedBufferAccess};
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
@@ -63,25 +64,29 @@ fn main() {
         None,
         Version::V1_1,
         &vulkano_win::required_extensions(),
-        None
+        None,
     ).expect("Failed to create instance");
 
-    let physical = PhysicalDevice::enumerate(&instance).next()
+    let device_ext = vulkano::device::DeviceExtensions {
+        khr_swapchain: true,
+        .. vulkano::device::DeviceExtensions::none()
+    };
+
+    let physical = PhysicalDevice::enumerate(&instance)
+        .filter(|&p| p.supported_extensions().is_superset_of(&device_ext))
+        .next()
         .expect("No devices available");
 
     let queue_family = physical.queue_families()
         .find(|&q| q.supports_graphics())
         .expect("Couldn't find a graphical queue family");
 
-    let (device, mut queues) = {
-        let device_ext = vulkano::device::DeviceExtensions {
-            khr_swapchain: true,
-            .. vulkano::device::DeviceExtensions::none()
-        };
-
-        Device::new(physical, physical.supported_features(), &device_ext,
-            [(queue_family, 0.5)].iter().cloned()).expect("Failed to create device")
-    };
+    let (device, mut queues) =
+        Device::new(
+            physical,
+            &Features::none(),
+            &device_ext,
+            [(queue_family, 0.5)].iter().cloned()).expect("Failed to create device");
 
     let queue = queues.next()
         .expect("Could not select queue");
