@@ -4,9 +4,12 @@ use std::sync::Arc;
 
 use vulkano::instance::Instance;
 use vulkano::device::{
-    physical::PhysicalDevice,
     Device,
     Features,
+};
+use vulkano::device::physical::{
+    PhysicalDevice,
+    PhysicalDeviceType,
 };
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer, TypedBufferAccess};
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
@@ -72,14 +75,28 @@ fn main() {
         .. vulkano::device::DeviceExtensions::none()
     };
 
-    let physical = PhysicalDevice::enumerate(&instance)
-        .filter(|&p| p.supported_extensions().is_superset_of(&device_ext))
-        .next()
-        .expect("No devices available");
+    let event_loop = EventLoop::new();
+    let window = WindowBuilder::new().build(&event_loop).unwrap();
+    window.set_title(TITLE);
+    let surface = create_vk_surface_from_handle(window, instance.clone()).unwrap();
 
-    let queue_family = physical.queue_families()
-        .find(|&q| q.supports_graphics())
-        .expect("Couldn't find a graphical queue family");
+    let (physical, queue_family) = PhysicalDevice::enumerate(&instance)
+        .filter(|&p| p.supported_extensions().is_superset_of(&device_ext))
+        .filter_map(|p| {
+            p.queue_families()
+                .find(|&q| q.supports_graphics())
+            .map(|q| (p, q))
+        })
+        .min_by_key(|(p, _)| {
+            match p.properties().device_type {
+                PhysicalDeviceType::DiscreteGpu => 0,
+                PhysicalDeviceType::IntegratedGpu => 1,
+                PhysicalDeviceType::VirtualGpu => 2,
+                PhysicalDeviceType::Cpu => 3,
+                PhysicalDeviceType::Other => 4,
+            }
+        })
+        .expect("No devices available");
 
     let (device, mut queues) =
         Device::new(
@@ -90,11 +107,6 @@ fn main() {
 
     let queue = queues.next()
         .expect("Could not select queue");
-
-    let event_loop = EventLoop::new();
-    let window = WindowBuilder::new().build(&event_loop).unwrap();
-    window.set_title(TITLE);
-    let surface = create_vk_surface_from_handle(window, instance.clone()).unwrap();
 
     let caps = surface.capabilities(physical)
         .expect("Failed to get surface capabilities");
