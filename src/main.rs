@@ -18,8 +18,11 @@ fn main() {
     const WIDTH: u32 = 800;
     const HEIGHT: u32 = 800;
 
-    let mut engine = Engine::init(TITLE, WIDTH, HEIGHT);
+    let engine = Engine::init(TITLE, WIDTH, HEIGHT);
+    begin_loop(engine);
+}
 
+fn begin_loop(mut engine: Engine) {
     engine.event_loop.run(move |event, _, control_flow| {
         match event {
             Event::WindowEvent {
