@@ -1,4 +1,5 @@
 use crate::shaders;
+use crate::vertex::Vertex;
 
 use std::sync::Arc;
 
@@ -6,6 +7,7 @@ use vulkano::instance::Instance;
 use vulkano::device::{
     Device,
     Features,
+    QueuesIter,
 };
 use vulkano::device::physical::{
     PhysicalDevice,
@@ -34,11 +36,6 @@ use vulkano::image::view::ImageView;
 use vulkano::render_pass::{Framebuffer, RenderPass};
 use winit::window::Window;
 
-#[derive(Default, Copy, Clone)]
-pub struct Vertex {
-    position: [f32; 2],
-}
-
 pub struct Engine {
     pub event_loop: EventLoop<()>,
     pub surface: Arc<Surface<Window>>,
@@ -55,7 +52,7 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub fn init(title: &str, width: u32, height: u32) -> Self {
+    fn get_instance() -> Arc<Instance> {
         let instance = Instance::new(
             None,
             Version::V1_1,
@@ -63,17 +60,24 @@ impl Engine {
             None,
         ).expect("Failed to create instance");
 
+        instance
+    }
+
+    fn get_surface(event_loop: &EventLoop<()>, instance: &Arc<Instance>, title: &str) -> Arc<Surface<Window>> {
+        let window = WindowBuilder::new().build(event_loop).unwrap();
+        window.set_title(title);
+        let surface = create_vk_surface_from_handle(window, instance.clone()).unwrap();
+
+        surface
+    }
+
+    fn get_device_and_queues(instance: &Arc<Instance>) -> (Arc<Device>, QueuesIter) {
         let device_ext = vulkano::device::DeviceExtensions {
             khr_swapchain: true,
             .. vulkano::device::DeviceExtensions::none()
         };
 
-        let event_loop = EventLoop::new();
-        let window = WindowBuilder::new().build(&event_loop).unwrap();
-        window.set_title(title);
-        let surface = create_vk_surface_from_handle(window, instance.clone()).unwrap();
-
-        let (physical, queue_family) = PhysicalDevice::enumerate(&instance)
+        let (physical, queue_family) = PhysicalDevice::enumerate(instance)
             .filter(|&p| p.supported_extensions().is_superset_of(&device_ext))
             .filter_map(|p| {
                 p.queue_families()
@@ -91,20 +95,21 @@ impl Engine {
             })
             .expect("No devices available");
 
-        let (device, mut queues) =
+        let (device, queues) =
             Device::new(
                 physical,
                 &Features::none(),
                 &device_ext,
                 [(queue_family, 0.5)].iter().cloned()).expect("Failed to create device");
 
-        let queue = queues.next()
-            .expect("Could not select queue");
+        (device, queues)
+    }
 
-        let caps = surface.capabilities(physical)
+    fn get_swapchain(surface: &Arc<Surface<Window>>, device: &Arc<Device>, queue: &Arc<Queue>, width: &u32, height: &u32) -> (Arc<Swapchain<Window>>, Vec<Arc<SwapchainImage<Window>>>) {
+        let caps = surface.capabilities(device.physical_device())
             .expect("Failed to get surface capabilities");
 
-        let dims = caps.current_extent.unwrap_or([width, height]);
+        let dims = caps.current_extent.unwrap_or([*width, *height]);
         let alpha = caps.supported_composite_alpha.iter().next().unwrap();
         let format = caps.supported_formats[0].0;
 
@@ -113,25 +118,43 @@ impl Engine {
             .format(format)
             .dimensions(dims)
             .usage(ImageUsage::color_attachment())
-            .sharing_mode(&queue)
+            .sharing_mode(queue)
             .composite_alpha(alpha)
             .build()
             .expect("Failed to create swapchain");
 
-        vulkano::impl_vertex!(Vertex, position);
+        (swapchain, images)
+    }
 
-        let vertices = vec!(
-            Vertex{ position: [-0.5, -0.5] },
-            Vertex{ position: [0.5, -0.5] },
-            Vertex{ position: [0.0, 0.5] },
-        );
-
+    fn create_polygon(vertices: Vec<Vertex>, device: &Arc<Device>) -> Arc<CpuAccessibleBuffer<[Vertex]>> {
         let vertex_buffer = CpuAccessibleBuffer::from_iter(
             device.clone(),
             BufferUsage::all(),
             false,
             vertices.into_iter(),
-        ).unwrap();
+        ).expect("Failed to create buffer");
+
+        vertex_buffer
+    }
+
+    pub fn init(title: &str, width: u32, height: u32) -> Self {
+        let instance = Engine::get_instance();
+        let event_loop = EventLoop::new();
+        let surface = Engine::get_surface(&event_loop, &instance, title);
+
+        let (device, mut queues) = Engine::get_device_and_queues(&instance);
+        let queue = queues.next()
+            .expect("Could not select queue");
+
+        let (swapchain, images) = Engine::get_swapchain(&surface, &device, &queue, &width, &height);
+
+        vulkano::impl_vertex!(Vertex, position);
+        let vertices = vec!(
+            Vertex{ position: [-0.5, -0.5] },
+            Vertex{ position: [0.5, -0.5] },
+            Vertex{ position: [0.0, 0.5] },
+        );
+        let vertex_buffer = Engine::create_polygon(vertices, &device);
 
         let render_pass = vulkano::single_pass_renderpass!(
             device.clone(),
@@ -147,7 +170,7 @@ impl Engine {
                 color: [color],
                 depth_stencil: {}
             }
-        ).unwrap();
+        ).expect("Failed to create render pass");
 
         let vs = shaders::vs::load(device.clone())
             .expect("Failed to create shader module");

@@ -1,7 +1,10 @@
 mod engine;
-pub mod shaders;
+mod shaders;
+mod vertex;
 
 use engine::Engine;
+
+use std::time::{Duration, Instant};
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
 use vulkano::swapchain::{self, SwapchainCreationError, AcquireError};
@@ -9,7 +12,6 @@ use vulkano::sync;
 use vulkano::sync::{GpuFuture, FlushError};
 use vulkano::buffer::TypedBufferAccess;
 use vulkano::command_buffer::SubpassContents;
-
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::ControlFlow;
 
@@ -17,13 +19,19 @@ fn main() {
     const TITLE: &str = "BASTEL";
     const WIDTH: u32 = 800;
     const HEIGHT: u32 = 800;
+    const FPS: u64 = 60;
 
     let engine = Engine::init(TITLE, WIDTH, HEIGHT);
-    begin_loop(engine);
+
+    begin_loop(engine, FPS);
 }
 
-fn begin_loop(mut engine: Engine) {
+fn begin_loop(mut engine: Engine, fps: u64) {
     engine.event_loop.run(move |event, _, control_flow| {
+        *control_flow = ControlFlow::WaitUntil(
+            Instant::now() + Duration::from_secs(1/fps)
+        );
+
         match event {
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
