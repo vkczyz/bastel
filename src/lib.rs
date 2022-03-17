@@ -15,12 +15,15 @@ use winit::event::{Event, WindowEvent};
 use winit::event_loop::ControlFlow;
 
 pub fn begin_loop(mut engine: Engine, fps: u64) {
+    // Convert FPS to redraw frequency
+    let freq_millis = 1000 / fps;
+
     let mut recreate_swapchain = false;
     let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
 
     engine.event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
-            Instant::now() + Duration::from_secs_f32(1.0 / fps as f32)
+            Instant::now() + Duration::from_millis(freq_millis)
         );
 
         match event {
