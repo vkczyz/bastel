@@ -27,6 +27,9 @@ fn main() {
 }
 
 fn begin_loop(mut engine: Engine, fps: u64) {
+    let mut recreate_swapchain = false;
+    let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
+
     engine.event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
             Instant::now() + Duration::from_secs(1/fps)
@@ -40,11 +43,11 @@ fn begin_loop(mut engine: Engine, fps: u64) {
             Event::WindowEvent {
                 event: WindowEvent::Resized(_),
                 ..
-            } => { engine.recreate_swapchain = true },
+            } => { recreate_swapchain = true },
             Event::RedrawEventsCleared => {
-                engine.previous_frame_end.as_mut().unwrap().cleanup_finished();
+                previous_frame_end.as_mut().unwrap().cleanup_finished();
 
-                if engine.recreate_swapchain {
+                if recreate_swapchain {
                     let dims: [u32; 2] = engine.surface.window().inner_size().into();
                     let (new_swapchain, new_images) =
                         match engine.swapchain.recreate().dimensions(dims).build() {
@@ -59,21 +62,21 @@ fn begin_loop(mut engine: Engine, fps: u64) {
                             engine.render_pass.clone(),
                             &mut engine.viewport,
                         );
-                        engine.recreate_swapchain = false;
+                        recreate_swapchain = false;
                 }
 
                 let (image_num, suboptimal, acquire_future) =
                     match swapchain::acquire_next_image(engine.swapchain.clone(), None) {
                         Ok(r) => r,
                         Err(AcquireError::OutOfDate) => {
-                            engine.recreate_swapchain = true;
+                            recreate_swapchain = true;
                             return;
                         },
                         Err(e) => panic!("Failed to acquire next image: {:?}", e),
                     };
 
                 if suboptimal {
-                    engine.recreate_swapchain = true;
+                    recreate_swapchain = true;
                 }
 
                 let clear_values = vec![[0.1, 0.1, 0.1].into()];
@@ -101,7 +104,7 @@ fn begin_loop(mut engine: Engine, fps: u64) {
 
                 let command_buffer = builder.build().unwrap();
 
-                let future = engine.previous_frame_end
+                let future = previous_frame_end
                     .take()
                     .unwrap()
                     .join(acquire_future)
@@ -112,15 +115,15 @@ fn begin_loop(mut engine: Engine, fps: u64) {
 
                 match future {
                     Ok(future) => {
-                        engine.previous_frame_end = Some(future.boxed());
+                        previous_frame_end = Some(future.boxed());
                     },
                     Err(FlushError::OutOfDate) => {
-                        engine.recreate_swapchain = true;
-                        engine.previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
+                        recreate_swapchain = true;
+                        previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
                     },
                     Err(e) => {
                         println!("Failed to flush future: {:?}", e);
-                        engine.previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
+                        previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
                     }
                 }
             }

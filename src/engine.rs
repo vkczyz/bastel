@@ -14,8 +14,6 @@ use vulkano::device::physical::{
     PhysicalDeviceType,
 };
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
-use vulkano::sync;
-use vulkano::sync::GpuFuture;
 use vulkano::image::ImageUsage;
 use vulkano::pipeline::graphics::input_assembly::InputAssemblyState;
 use vulkano::pipeline::graphics::vertex_input::BuffersDefinition;
@@ -41,8 +39,6 @@ pub struct Engine {
     pub surface: Arc<Surface<Window>>,
     pub swapchain: Arc<Swapchain<Window>>,
     pub framebuffers: Vec<Arc<Framebuffer>>,
-    pub recreate_swapchain: bool,
-    pub previous_frame_end: Option<Box<dyn GpuFuture>>,
     pub viewport: Viewport,
     pub render_pass: Arc<RenderPass>,
     pub device: Arc<Device>,
@@ -199,16 +195,12 @@ impl Engine {
             depth_range: 0.0..1.0,
         };
         let framebuffers = Engine::window_size_dependent_setup(&images, render_pass.clone(), &mut viewport);
-        let recreate_swapchain = false;
-        let previous_frame_end = Some(sync::now(device.clone()).boxed());
 
         return Engine {
             event_loop,
             surface,
             swapchain,
             framebuffers,
-            recreate_swapchain,
-            previous_frame_end,
             viewport,
             render_pass,
             device,
