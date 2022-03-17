@@ -20,7 +20,7 @@ pub fn begin_loop(mut engine: Engine, fps: u64) {
 
     engine.event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
-            Instant::now() + Duration::from_secs(1/fps)
+            Instant::now() + Duration::from_secs_f32(1.0 / fps as f32)
         );
 
         match event {
