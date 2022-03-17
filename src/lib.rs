@@ -6,7 +6,6 @@ use engine::Engine;
 use std::time::{Duration, Instant};
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
-use vulkano::swapchain::{self, AcquireError};
 use vulkano::sync;
 use vulkano::sync::{GpuFuture, FlushError};
 use vulkano::buffer::TypedBufferAccess;
@@ -46,13 +45,12 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 }
 
                 let (image_num, suboptimal, acquire_future) =
-                    match swapchain::acquire_next_image(engine.swapchain.clone(), None) {
-                        Ok(r) => r,
-                        Err(AcquireError::OutOfDate) => {
+                    match engine.acquire_next_image() {
+                        Ok(d) => d,
+                        Err(_) => {
                             recreate_swapchain = true;
                             return;
-                        },
-                        Err(e) => panic!("Failed to acquire next image: {:?}", e),
+                        }
                     };
 
                 if suboptimal {

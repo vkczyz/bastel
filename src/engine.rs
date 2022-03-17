@@ -20,7 +20,7 @@ use vulkano::pipeline::graphics::vertex_input::BuffersDefinition;
 use vulkano::pipeline::graphics::viewport::{Viewport, ViewportState};
 use vulkano::pipeline::GraphicsPipeline;
 use vulkano::render_pass::Subpass;
-use vulkano::swapchain::{Surface, Swapchain, SwapchainCreationError};
+use vulkano::swapchain::{self, AcquireError, Surface, Swapchain, SwapchainAcquireFuture, SwapchainCreationError};
 use vulkano::device::Queue;
 use vulkano::Version;
 
@@ -149,6 +149,19 @@ impl Engine {
         );
 
         Ok(())
+    }
+
+    pub fn acquire_next_image(&self) -> Result<(usize, bool, SwapchainAcquireFuture<Window>), ()> {
+        let (image_num, suboptimal, acquire_future) =
+            match swapchain::acquire_next_image(self.swapchain.clone(), None) {
+                Ok(r) => r,
+                Err(AcquireError::OutOfDate) => {
+                    return Err(());
+                },
+                Err(e) => panic!("Failed to acquire next image: {:?}", e),
+            };
+
+        Ok((image_num, suboptimal, acquire_future))
     }
 
     pub fn init(title: &str, width: u32, height: u32) -> (Self, EventLoop<()>) {
