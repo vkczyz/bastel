@@ -15,6 +15,7 @@ use vulkano::device::physical::{
 };
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
 use vulkano::image::ImageUsage;
+use vulkano::memory::CpuAccess;
 use vulkano::pipeline::graphics::input_assembly::InputAssemblyState;
 use vulkano::pipeline::graphics::vertex_input::BuffersDefinition;
 use vulkano::pipeline::graphics::viewport::{Viewport, ViewportState};
@@ -43,7 +44,7 @@ pub struct Engine {
     pub device: Arc<Device>,
     pub queue: Arc<Queue>,
     pub pipeline: Arc<GraphicsPipeline>,
-    pub vertex_buffer: Arc<CpuAccessibleBuffer<[Vertex]>>,
+    pub vertex_buffers: Vec<Arc<CpuAccessibleBuffer<[Vertex]>>>,
 }
 
 impl Engine {
@@ -121,7 +122,7 @@ impl Engine {
         (swapchain, images)
     }
 
-    fn create_polygon(vertices: Vec<Vertex>, device: &Arc<Device>) -> Arc<CpuAccessibleBuffer<[Vertex]>> {
+    pub fn create_polygon(vertices: Vec<Vertex>, device: &Arc<Device>) -> Arc<CpuAccessibleBuffer<[Vertex]>> {
         let vertex_buffer = CpuAccessibleBuffer::from_iter(
             device.clone(),
             BufferUsage::all(),
@@ -130,6 +131,10 @@ impl Engine {
         ).expect("Failed to create buffer");
 
         vertex_buffer
+    }
+
+    pub fn add_polygon(&mut self, vertex_buffer: Arc<CpuAccessibleBuffer<[Vertex]>>) {
+        self.vertex_buffers.push(vertex_buffer);
     }
 
     pub fn recreate_swapchain(&mut self) -> Result<(), ()> {
@@ -176,12 +181,6 @@ impl Engine {
         let (swapchain, images) = Engine::get_swapchain(&surface, &device, &queue, &width, &height);
 
         vulkano::impl_vertex!(Vertex, position);
-        let vertices = vec!(
-            Vertex{ position: [-0.5, -0.5] },
-            Vertex{ position: [0.5, -0.5] },
-            Vertex{ position: [0.0, 0.5] },
-        );
-        let vertex_buffer = Engine::create_polygon(vertices, &device);
 
         let render_pass = vulkano::single_pass_renderpass!(
             device.clone(),
@@ -236,7 +235,7 @@ impl Engine {
             device,
             queue,
             pipeline,
-            vertex_buffer,
+            vertex_buffers: vec!(),
         }, event_loop)
     }
 

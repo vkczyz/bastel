@@ -3,6 +3,7 @@ mod shaders;
 mod vertex;
 
 use engine::Engine;
+use vertex::Vertex;
 use std::time::{Duration, Instant};
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
@@ -19,6 +20,14 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
 
     let mut recreate_swapchain = false;
     let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
+
+    let vertices = vec!(
+        Vertex{ position: [0.5, 0.5] },
+        Vertex{ position: [-0.5, 0.5] },
+        Vertex{ position: [0.0, -0.5] },
+    );
+    let vertex_buffer = Engine::create_polygon(vertices, &engine.device);
+    engine.add_polygon(vertex_buffer);
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
@@ -73,10 +82,16 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                     )
                     .unwrap()
                     .set_viewport(0, [engine.viewport.clone()])
-                    .bind_pipeline_graphics(engine.pipeline.clone())
-                    .bind_vertex_buffers(0, engine.vertex_buffer.clone())
-                    .draw(engine.vertex_buffer.len() as u32, 1, 0, 0)
-                    .unwrap()
+                    .bind_pipeline_graphics(engine.pipeline.clone());
+
+                for buffer in &engine.vertex_buffers {
+                    builder
+                        .bind_vertex_buffers(0, buffer.clone())
+                        .draw(buffer.len() as u32, 1, 0, 0)
+                        .unwrap();
+                }
+
+                builder
                     .end_render_pass()
                     .unwrap();
 
