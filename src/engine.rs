@@ -121,7 +121,7 @@ impl Engine {
         (swapchain, images)
     }
 
-    fn create_polygon(vertices: Vec<Vertex>, device: &Arc<Device>) -> Arc<CpuAccessibleBuffer<[Vertex]>> {
+    pub fn create_polygon(vertices: Vec<Vertex>, device: &Arc<Device>) -> Arc<CpuAccessibleBuffer<[Vertex]>> {
         let vertex_buffer = CpuAccessibleBuffer::from_iter(
             device.clone(),
             BufferUsage::all(),
@@ -130,6 +130,10 @@ impl Engine {
         ).expect("Failed to create buffer");
 
         vertex_buffer
+    }
+
+    pub fn add_polygon(&mut self, buffer: Arc<CpuAccessibleBuffer<[Vertex]>>) {
+        self.vertex_buffer = buffer;
     }
 
     pub fn recreate_swapchain(&mut self) -> Result<(), ()> {

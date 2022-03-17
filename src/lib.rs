@@ -3,7 +3,11 @@ mod shaders;
 mod vertex;
 
 use engine::Engine;
+use vertex::Vertex;
 use std::time::{Duration, Instant};
+
+use rand::prelude::*;
+use rand::{thread_rng, Rng};
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
 use vulkano::sync;
@@ -20,6 +24,8 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
     let mut recreate_swapchain = false;
     let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
 
+    let mut rng = thread_rng();
+
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
             Instant::now() + Duration::from_millis(freq_millis)
@@ -30,10 +36,34 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 event: WindowEvent::CloseRequested,
                 ..
             } => { *control_flow = ControlFlow::Exit; },
+
             Event::WindowEvent {
                 event: WindowEvent::Resized(_),
                 ..
             } => { recreate_swapchain = true },
+
+            Event::WindowEvent {
+                event: WindowEvent::MouseInput {
+                    state: winit::event::ElementState::Released,
+                    ..
+                },
+                ..
+            } => {
+                let vertices = vec!(
+                    Vertex{ position: [rng.gen_range(-1.0..1.0) as f32, rng.gen_range(-1.0..1.0) as f32] },
+                    Vertex{ position: [rng.gen_range(-1.0..1.0) as f32, rng.gen_range(-1.0..1.0) as f32] },
+                    Vertex{ position: [rng.gen_range(-1.0..1.0) as f32, rng.gen_range(-1.0..1.0) as f32] },
+                );
+
+                for n in 0..2 {
+                    println!("{:#?}", &vertices[n].position);
+                }
+
+                let vertex_buffer = Engine::create_polygon(vertices, &engine.device);
+                engine.add_polygon(vertex_buffer);
+
+            },
+
             Event::RedrawEventsCleared => {
                 previous_frame_end.as_mut().unwrap().cleanup_finished();
 
