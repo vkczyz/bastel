@@ -20,7 +20,7 @@ use vulkano::pipeline::graphics::vertex_input::BuffersDefinition;
 use vulkano::pipeline::graphics::viewport::{Viewport, ViewportState};
 use vulkano::pipeline::GraphicsPipeline;
 use vulkano::render_pass::Subpass;
-use vulkano::swapchain::{Surface, Swapchain};
+use vulkano::swapchain::{Surface, Swapchain, SwapchainCreationError};
 use vulkano::device::Queue;
 use vulkano::Version;
 
@@ -35,7 +35,6 @@ use vulkano::render_pass::{Framebuffer, RenderPass};
 use winit::window::Window;
 
 pub struct Engine {
-    pub event_loop: EventLoop<()>,
     pub surface: Arc<Surface<Window>>,
     pub swapchain: Arc<Swapchain<Window>>,
     pub framebuffers: Vec<Arc<Framebuffer>>,
@@ -133,7 +132,26 @@ impl Engine {
         vertex_buffer
     }
 
-    pub fn init(title: &str, width: u32, height: u32) -> Self {
+    pub fn recreate_swapchain(&mut self) -> Result<(), ()> {
+        let dims: [u32; 2] = self.surface.window().inner_size().into();
+        let (swapchain, images) =
+            match self.swapchain.recreate().dimensions(dims).build() {
+                Ok(r) => r,
+                Err(SwapchainCreationError::UnsupportedDimensions) => return Err(()),
+                Err(e) => panic!("Failed to recreate swapchain: {:?}", e),
+            };
+
+        self.swapchain = swapchain;
+        self.framebuffers = Engine::window_size_dependent_setup(
+            &images,
+            self.render_pass.clone(),
+            &mut self.viewport,
+        );
+
+        Ok(())
+    }
+
+    pub fn init(title: &str, width: u32, height: u32) -> (Self, EventLoop<()>) {
         let instance = Engine::get_instance();
         let event_loop = EventLoop::new();
         let surface = Engine::get_surface(&event_loop, &instance, title);
@@ -196,8 +214,7 @@ impl Engine {
         };
         let framebuffers = Engine::window_size_dependent_setup(&images, render_pass.clone(), &mut viewport);
 
-        return Engine {
-            event_loop,
+        (Engine {
             surface,
             swapchain,
             framebuffers,
@@ -207,7 +224,7 @@ impl Engine {
             queue,
             pipeline,
             vertex_buffer,
-        }
+        }, event_loop)
     }
 
     pub fn window_size_dependent_setup(

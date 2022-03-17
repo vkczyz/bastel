@@ -6,22 +6,22 @@ use engine::Engine;
 use std::time::{Duration, Instant};
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
-use vulkano::swapchain::{self, SwapchainCreationError, AcquireError};
+use vulkano::swapchain::{self, AcquireError};
 use vulkano::sync;
 use vulkano::sync::{GpuFuture, FlushError};
 use vulkano::buffer::TypedBufferAccess;
 use vulkano::command_buffer::SubpassContents;
 use winit::event::{Event, WindowEvent};
-use winit::event_loop::ControlFlow;
+use winit::event_loop::{ControlFlow, EventLoop};
 
-pub fn begin_loop(mut engine: Engine, fps: u64) {
+pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
     // Convert FPS to redraw frequency
     let freq_millis = 1000 / fps;
 
     let mut recreate_swapchain = false;
     let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
 
-    engine.event_loop.run(move |event, _, control_flow| {
+    event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
             Instant::now() + Duration::from_millis(freq_millis)
         );
@@ -39,21 +39,10 @@ pub fn begin_loop(mut engine: Engine, fps: u64) {
                 previous_frame_end.as_mut().unwrap().cleanup_finished();
 
                 if recreate_swapchain {
-                    let dims: [u32; 2] = engine.surface.window().inner_size().into();
-                    let (new_swapchain, new_images) =
-                        match engine.swapchain.recreate().dimensions(dims).build() {
-                            Ok(r) => r,
-                            Err(SwapchainCreationError::UnsupportedDimensions) => return,
-                            Err(e) => panic!("Failed to recreate swapchain: {:?}", e),
-                        };
-
-                        engine.swapchain = new_swapchain;
-                        engine.framebuffers = Engine::window_size_dependent_setup(
-                            &new_images,
-                            engine.render_pass.clone(),
-                            &mut engine.viewport,
-                        );
-                        recreate_swapchain = false;
+                    if let Err(_) = engine.recreate_swapchain() {
+                        return;
+                    }
+                    recreate_swapchain = false;
                 }
 
                 let (image_num, suboptimal, acquire_future) =
