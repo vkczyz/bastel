@@ -6,8 +6,7 @@ use engine::Engine;
 use vertex::Vertex;
 use std::time::{Duration, Instant};
 
-use rand::prelude::*;
-use rand::{thread_rng, Rng};
+use rand::Rng;
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
 use vulkano::sync;
@@ -24,7 +23,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
     let mut recreate_swapchain = false;
     let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
 
-    let mut rng = thread_rng();
+    let mut rng = rand::thread_rng();
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
@@ -54,10 +53,6 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                     Vertex{ position: [rng.gen_range(-1.0..1.0) as f32, rng.gen_range(-1.0..1.0) as f32] },
                     Vertex{ position: [rng.gen_range(-1.0..1.0) as f32, rng.gen_range(-1.0..1.0) as f32] },
                 );
-
-                for n in 0..2 {
-                    println!("{:#?}", &vertices[n].position);
-                }
 
                 let vertex_buffer = Engine::create_polygon(vertices, &engine.device);
                 engine.add_polygon(vertex_buffer);
@@ -103,10 +98,16 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                     )
                     .unwrap()
                     .set_viewport(0, [engine.viewport.clone()])
-                    .bind_pipeline_graphics(engine.pipeline.clone())
-                    .bind_vertex_buffers(0, engine.vertex_buffer.clone())
-                    .draw(engine.vertex_buffer.len() as u32, 1, 0, 0)
-                    .unwrap()
+                    .bind_pipeline_graphics(engine.pipeline.clone());
+
+                for buffer in &engine.vertex_buffers {
+                    builder
+                        .bind_vertex_buffers(0, buffer.clone())
+                        .draw(buffer.len() as u32, 1, 0, 0)
+                        .unwrap();
+                }
+
+                builder
                     .end_render_pass()
                     .unwrap();
 
