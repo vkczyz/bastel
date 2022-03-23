@@ -2,7 +2,6 @@ use crate::Engine;
 use crate::Vertex;
 use winit::event::{ElementState, KeyboardInput};
 
-#[derive(Debug)]
 pub struct Input {
     pub cursor: [f32; 2],
     up: bool,
@@ -28,7 +27,7 @@ impl Input {
             1.0 / engine.surface.window().inner_size().height as f32,
             ];
         let speed: f32 = 10.0;
-        let newnits = units.map(|u| u * speed);
+        let factor = units.map(|u| u * speed);
 
         match input.scancode {
             // Clockwise arrow keys
@@ -59,12 +58,10 @@ impl Input {
             _ => {},
         }
 
-        println!("{:#?}", self);
-
         self.handle_movement(
             engine,
-            newnits[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32)),
-            newnits[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32)),
+            factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32)),
+            factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32)),
         );
     }
 
