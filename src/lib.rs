@@ -1,6 +1,7 @@
 pub mod engine;
 mod shaders;
 mod vertex;
+mod input;
 
 use engine::Engine;
 use vertex::Vertex;
@@ -48,81 +49,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 },
                 ..
             } => {
-                if input.state != winit::event::ElementState::Pressed {
-                    return;
-                }
-
-                let units: [f32; 2] = [
-                    1.0 / engine.surface.window().inner_size().width as f32,
-                    1.0 / engine.surface.window().inner_size().height as f32,
-                    ];
-                let speed: f32 = 10.0;
-                let newnits = units.map(|u| u * speed);
-
-                match input.scancode {
-                    // Clockwise arrow keys
-                    103 => {
-                        let old_vertices = match engine.pop_polygon() {
-                            Some(p) => p,
-                            None => { return; }
-                        };
-                        let old_vertices = old_vertices.read().unwrap();
-
-                        let new_vertices = old_vertices
-                            .iter()
-                            .map(|v| Vertex{ position: [v.position[0], v.position[1] - newnits[1]] })
-                            .collect();
-
-                        let vertex_buffer = Engine::create_polygon(new_vertices, &engine.device);
-                        engine.add_polygon(vertex_buffer);
-                    }
-                    106 => {
-                        let old_vertices = match engine.pop_polygon() {
-                            Some(p) => p,
-                            None => { return; }
-                        };
-                        let old_vertices = old_vertices.read().unwrap();
-
-                        let new_vertices = old_vertices
-                            .iter()
-                            .map(|v| Vertex{ position: [v.position[0] + newnits[0], v.position[1]] })
-                            .collect();
-                            
-                        let vertex_buffer = Engine::create_polygon(new_vertices, &engine.device);
-                        engine.vertex_buffers.push(vertex_buffer);
-                    },
-                    108 => {
-                        let old_vertices = match engine.pop_polygon() {
-                            Some(p) => p,
-                            None => { return; }
-                        };
-                        let old_vertices = old_vertices.read().unwrap();
-
-                        let new_vertices = old_vertices
-                            .iter()
-                            .map(|v| Vertex{ position: [v.position[0], v.position[1] + newnits[1]] })
-                            .collect();
-
-                        let vertex_buffer = Engine::create_polygon(new_vertices, &engine.device);
-                        engine.vertex_buffers.push(vertex_buffer);
-                    },
-                    105 => {
-                        let old_vertices = match engine.pop_polygon() {
-                            Some(p) => p,
-                            None => { return; }
-                        };
-                        let old_vertices = old_vertices.read().unwrap();
-
-                        let new_vertices = old_vertices
-                            .iter()
-                            .map(|v| Vertex{ position: [v.position[0] - newnits[0], v.position[1]] })
-                            .collect();
-
-                        let vertex_buffer = Engine::create_polygon(new_vertices, &engine.device);
-                        engine.vertex_buffers.push(vertex_buffer);
-                    },
-                    _ => {},
-                }
+                input::handle_input(&mut engine, input);
             }
 
             Event::WindowEvent {
