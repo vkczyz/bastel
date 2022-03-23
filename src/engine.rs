@@ -136,6 +136,10 @@ impl Engine {
         self.vertex_buffers.push(vertex_buffer);
     }
 
+    pub fn pop_polygon(&mut self) -> Option<Arc<CpuAccessibleBuffer<[Vertex]>>> {
+        self.vertex_buffers.pop()
+    }
+
     pub fn recreate_swapchain(&mut self) -> Result<(), ()> {
         let dims: [u32; 2] = self.surface.window().inner_size().into();
         let (swapchain, images) =
