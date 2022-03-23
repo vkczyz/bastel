@@ -1,7 +1,6 @@
 use bastel;
 use bastel::engine::Engine;
 
-
 fn main() {
     const TITLE: &str = "BASTEL";
     const WIDTH: u32 = 800;
