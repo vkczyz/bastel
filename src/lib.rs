@@ -4,7 +4,9 @@ mod vertex;
 mod input;
 
 use engine::Engine;
+use input::Input;
 use vertex::Vertex;
+
 use std::time::{Duration, Instant};
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
@@ -22,7 +24,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
     let mut recreate_swapchain = false;
     let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
 
-    let mut cursor_pos: [f32; 2] = [0.0, 0.0];
+    let mut input_handler = Input::new();
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
@@ -47,7 +49,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 },
                 ..
             } => {
-                input::handle_input(&mut engine, input);
+                input_handler.handle_input(&mut engine, input);
             }
 
             Event::WindowEvent {
@@ -58,9 +60,9 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 ..
             } => {
                 let vertices = vec!(
-                    Vertex{ position: [cursor_pos[0] as f32, cursor_pos[1] as f32] },
-                    Vertex{ position: [cursor_pos[0] as f32 + 0.1, cursor_pos[1] as f32] },
-                    Vertex{ position: [cursor_pos[0] as f32, cursor_pos[1] as f32 + 0.1] },
+                    Vertex{ position: [input_handler.cursor[0] as f32, input_handler.cursor[1] as f32] },
+                    Vertex{ position: [input_handler.cursor[0] as f32 + 0.1, input_handler.cursor[1] as f32] },
+                    Vertex{ position: [input_handler.cursor[0] as f32, input_handler.cursor[1] as f32 + 0.1] },
                 );
 
                 let vertex_buffer = Engine::create_polygon(vertices, &engine.device);
@@ -75,7 +77,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 ..
             } => {
                 let dims: [f64; 2] = engine.surface.window().inner_size().into();
-                cursor_pos = [
+                input_handler.cursor = [
                     (2.0 * (position.x - dims[0] / 2.0) / dims[0]) as f32,
                     (2.0 * (position.y - dims[1] / 2.0) / dims[1]) as f32,
                 ];
