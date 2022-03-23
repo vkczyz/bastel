@@ -74,10 +74,10 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 },
                 ..
             } => {
-                let dims: [f32; 2] = engine.surface.window().inner_size().into();
+                let dims: [f64; 2] = engine.surface.window().inner_size().into();
                 cursor_pos = [
-                    position.x as f32 / dims[0],
-                    position.y as f32 / dims[1],
+                    (2.0 * (position.x - dims[0] / 2.0) / dims[0]) as f32,
+                    (2.0 * (position.y - dims[1] / 2.0) / dims[1]) as f32,
                 ];
             }
 

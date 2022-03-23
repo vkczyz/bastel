@@ -206,6 +206,12 @@ impl Engine {
         let fs = shaders::fs::load(device.clone())
             .expect("Failed to create shader module");
 
+        let viewport = Viewport {
+            origin: [0.0, 0.0],
+            dimensions: [width as f32, height as f32],
+            depth_range: 0.0..1.0,
+        };
+
         let pipeline = GraphicsPipeline::start()
             .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
