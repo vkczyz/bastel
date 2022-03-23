@@ -7,8 +7,6 @@ use engine::Engine;
 use vertex::Vertex;
 use std::time::{Duration, Instant};
 
-use rand::Rng;
-
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
 use vulkano::sync;
 use vulkano::sync::{GpuFuture, FlushError};
@@ -24,7 +22,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
     let mut recreate_swapchain = false;
     let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
 
-    let mut rng = rand::thread_rng();
+    let mut cursor_pos: [f32; 2] = [0.0, 0.0];
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
@@ -60,15 +58,28 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 ..
             } => {
                 let vertices = vec!(
-                    Vertex{ position: [rng.gen_range(-1.0..1.0) as f32, rng.gen_range(-1.0..1.0) as f32] },
-                    Vertex{ position: [rng.gen_range(-1.0..1.0) as f32, rng.gen_range(-1.0..1.0) as f32] },
-                    Vertex{ position: [rng.gen_range(-1.0..1.0) as f32, rng.gen_range(-1.0..1.0) as f32] },
+                    Vertex{ position: [cursor_pos[0] as f32, cursor_pos[1] as f32] },
+                    Vertex{ position: [cursor_pos[0] as f32 + 0.1, cursor_pos[1] as f32] },
+                    Vertex{ position: [cursor_pos[0] as f32, cursor_pos[1] as f32 + 0.1] },
                 );
 
                 let vertex_buffer = Engine::create_polygon(vertices, &engine.device);
                 engine.add_polygon(vertex_buffer);
-
             },
+
+            Event::WindowEvent {
+                event: WindowEvent::CursorMoved {
+                    position,
+                    ..
+                },
+                ..
+            } => {
+                let dims: [f32; 2] = engine.surface.window().inner_size().into();
+                cursor_pos = [
+                    position.x as f32 / dims[0],
+                    position.y as f32 / dims[1],
+                ];
+            }
 
             Event::RedrawEventsCleared => {
                 previous_frame_end.as_mut().unwrap().cleanup_finished();
