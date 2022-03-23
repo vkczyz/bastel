@@ -16,16 +16,16 @@ pub fn handle_input(engine: &mut Engine, input: KeyboardInput) {
 
     match input.scancode {
         // Clockwise arrow keys
-        103 => {  // +17
+        103 | 17 => {
             handle_movement(engine, 0.0, -newnits[1]);
         }
-        106 => {  // +32
+        106 | 32 => {
             handle_movement(engine, newnits[0], 0.0);
         },
-        108 => {  // +31
+        108 | 31 => {
             handle_movement(engine, 0.0, newnits[1]);
         },
-        105 => {  // +30
+        105 | 30 => {
             handle_movement(engine, -newnits[0], 0.0);
         },
         _ => {},
