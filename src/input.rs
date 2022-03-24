@@ -80,4 +80,10 @@ impl Input {
         let vertex_buffer = Engine::create_polygon(new_vertices, &engine.device);
         engine.vertex_buffers.push(vertex_buffer);
     }
+
+    pub fn is_valid_cursor_position(&self) -> bool {
+        if self.cursor[0] < -1.0 || self.cursor[0] > 1.0 { return false; }
+        if self.cursor[1] < -1.0 || self.cursor[1] > 1.0 { return false; }
+        true
+    }
 }

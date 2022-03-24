@@ -76,6 +76,10 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 },
                 ..
             } => {
+                if !input_handler.is_valid_cursor_position() {
+                    return;
+                }
+
                 let vertices = vec!(
                     Vertex{ position: [input_handler.cursor[0] as f32, input_handler.cursor[1] as f32] },
                     Vertex{ position: [input_handler.cursor[0] as f32 + 0.1, input_handler.cursor[1] as f32] },
@@ -133,7 +137,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                     recreate_swapchain = true;
                 }
 
-                let clear_values = vec![[0.1, 0.1, 0.1].into()];
+                let clear_values = vec![[0.0, 0.0, 0.0].into()];
 
                 let mut builder = AutoCommandBufferBuilder::primary(
                     engine.device.clone(),
