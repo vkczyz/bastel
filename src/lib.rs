@@ -8,7 +8,6 @@ use input::Input;
 use vertex::Vertex;
 
 use std::time::{Duration, Instant};
-use std::cmp::min;
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
 use vulkano::sync;
@@ -48,12 +47,10 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 
                 if x > y {
                     let vx = y*ratio;
-                    println!("({}, {})", vx, y);
                     engine.viewport.dimensions = [vx, y];
                     engine.viewport.origin = [(x / 2.0) - (vx / 2.0), 0.0];
                 } else {
                     let vy = x/ratio;
-                    println!("({}, {})", x, vy);
                     engine.viewport.dimensions = [x, vy];
                     engine.viewport.origin = [0.0, (y / 2.0) - (vy / 2.0)];
                 }
