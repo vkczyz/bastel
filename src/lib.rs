@@ -42,8 +42,16 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 event: WindowEvent::Resized(size),
                 ..
             } => {
-                let dim = min(size.width, size.height);
-                engine.viewport.dimensions = [dim as f32, dim as f32];
+                let dim = min(size.width, size.height) as f32;
+                engine.viewport.dimensions = [dim, dim];
+
+                if dim == size.width as f32 {
+                    let origin = [0.0, size.height as f32 / 2.0 - dim/2.0];
+                    engine.viewport.origin = origin;
+                } else if dim == size.height as f32 {
+                    let origin = [size.width as f32 / 2.0 - dim / 2.0, 0.0];
+                    engine.viewport.origin = origin;
+                }
 
                 engine.recreate_pipeline().unwrap();
                 recreate_swapchain = true
@@ -83,11 +91,21 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 },
                 ..
             } => {
-                let dims: [f64; 2] = engine.surface.window().inner_size().into();
-                input_handler.cursor = [
-                    (2.0 * (position.x - dims[0] / 2.0) / dims[0]) as f32,
-                    (2.0 * (position.y - dims[1] / 2.0) / dims[1]) as f32,
+                let real_dims: [f32; 2] = engine.viewport.dimensions.into();
+                let view_dims: [f32; 2] = [
+                    real_dims[0] - 2.0 * engine.viewport.origin[0],
+                    real_dims[1] - 2.0 * engine.viewport.origin[1],
                 ];
+
+                let mut pos: [f32; 2] = position.into();
+                pos = [
+                    (2.0 * (pos[0] - real_dims[0] / 2.0) / real_dims[0]) as f32,
+                    (2.0 * (pos[1] - real_dims[1] / 2.0) / real_dims[1]) as f32,
+                ];
+                pos[0] *= real_dims[0] / view_dims[0];
+                pos[1] *= real_dims[1] / view_dims[1];
+
+                input_handler.cursor = pos;
             }
 
             Event::RedrawEventsCleared => {
