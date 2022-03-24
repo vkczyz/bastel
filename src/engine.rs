@@ -2,6 +2,7 @@ use crate::shaders;
 use crate::vertex::Vertex;
 
 use std::sync::Arc;
+use std::collections::HashMap;
 
 use vulkano::instance::Instance;
 use vulkano::device::{
@@ -20,6 +21,7 @@ use vulkano::pipeline::graphics::vertex_input::BuffersDefinition;
 use vulkano::pipeline::graphics::viewport::{Viewport, ViewportState};
 use vulkano::pipeline::GraphicsPipeline;
 use vulkano::render_pass::Subpass;
+use vulkano::shader::ShaderModule;
 use vulkano::swapchain::{self, AcquireError, Surface, Swapchain, SwapchainAcquireFuture, SwapchainCreationError};
 use vulkano::device::Queue;
 use vulkano::Version;
@@ -44,6 +46,7 @@ pub struct Engine {
     pub queue: Arc<Queue>,
     pub pipeline: Arc<GraphicsPipeline>,
     pub vertex_buffers: Vec<Arc<CpuAccessibleBuffer<[Vertex]>>>,
+    pub shaders: HashMap<String, Arc<ShaderModule>>,
 }
 
 impl Engine {
@@ -159,6 +162,25 @@ impl Engine {
         Ok(())
     }
 
+    pub fn recreate_pipeline(&mut self) -> Result<(), ()> {
+        let viewport = self.viewport.clone();
+        let vs = self.shaders.get("vs").unwrap();
+        let fs = self.shaders.get("fs").unwrap();
+
+        let pipeline = GraphicsPipeline::start()
+            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
+            .vertex_shader(vs.entry_point("main").unwrap(), ())
+            .input_assembly_state(InputAssemblyState::new())
+            .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([viewport]))
+            .fragment_shader(fs.entry_point("main").unwrap(), ())
+            .render_pass(Subpass::from(self.render_pass.clone(), 0).unwrap())
+            .build(self.device.clone())
+            .unwrap();
+        self.pipeline = pipeline;
+
+        Ok(())
+    }
+
     pub fn acquire_next_image(&self) -> Result<(usize, bool, SwapchainAcquireFuture<Window>), ()> {
         let (image_num, suboptimal, acquire_future) =
             match swapchain::acquire_next_image(self.swapchain.clone(), None) {
@@ -201,10 +223,10 @@ impl Engine {
             }
         ).expect("Failed to create render pass");
 
-        let vs = shaders::vs::load(device.clone())
-            .expect("Failed to create shader module");
-        let fs = shaders::fs::load(device.clone())
-            .expect("Failed to create shader module");
+        let shaders = HashMap::from([
+        (String::from("vs"), shaders::vs::load(device.clone()).expect("Failed to create shader module")),
+        (String::from("fs"), shaders::fs::load(device.clone()).expect("Failed to create shader module")),
+        ]);
 
         let viewport = Viewport {
             origin: [0.0, 0.0],
@@ -214,10 +236,10 @@ impl Engine {
 
         let pipeline = GraphicsPipeline::start()
             .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
-            .vertex_shader(vs.entry_point("main").unwrap(), ())
+            .vertex_shader(shaders.get("vs").unwrap().entry_point("main").unwrap(), ())
             .input_assembly_state(InputAssemblyState::new())
-            .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
-            .fragment_shader(fs.entry_point("main").unwrap(), ())
+            .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([viewport]))
+            .fragment_shader(shaders.get("fs").unwrap().entry_point("main").unwrap(), ())
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
             .build(device.clone())
             .unwrap();
@@ -239,6 +261,7 @@ impl Engine {
             queue,
             pipeline,
             vertex_buffers: vec!(),
+            shaders,
         }, event_loop)
     }
 

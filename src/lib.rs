@@ -8,6 +8,7 @@ use input::Input;
 use vertex::Vertex;
 
 use std::time::{Duration, Instant};
+use std::cmp::min;
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
 use vulkano::sync;
@@ -38,9 +39,15 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
             } => { *control_flow = ControlFlow::Exit; },
 
             Event::WindowEvent {
-                event: WindowEvent::Resized(_),
+                event: WindowEvent::Resized(size),
                 ..
-            } => { recreate_swapchain = true },
+            } => {
+                let dim = min(size.width, size.height);
+                engine.viewport.dimensions = [dim as f32, dim as f32];
+
+                engine.recreate_pipeline().unwrap();
+                recreate_swapchain = true
+            },
 
             Event::WindowEvent {
                 event: WindowEvent::KeyboardInput {
