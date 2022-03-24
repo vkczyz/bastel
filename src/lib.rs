@@ -26,6 +26,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
     let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
 
     let mut input_handler = Input::new();
+    let ratio = engine.viewport.dimensions[0] / engine.viewport.dimensions[1];
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
@@ -42,15 +43,19 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 event: WindowEvent::Resized(size),
                 ..
             } => {
-                let dim = min(size.width, size.height) as f32;
-                engine.viewport.dimensions = [dim, dim];
-
-                if dim == size.width as f32 {
-                    let origin = [0.0, size.height as f32 / 2.0 - dim/2.0];
-                    engine.viewport.origin = origin;
-                } else if dim == size.height as f32 {
-                    let origin = [size.width as f32 / 2.0 - dim / 2.0, 0.0];
-                    engine.viewport.origin = origin;
+                let x = size.width as f32;
+                let y = size.height as f32;
+                
+                if x > y {
+                    let vx = y*ratio;
+                    println!("({}, {})", vx, y);
+                    engine.viewport.dimensions = [vx, y];
+                    engine.viewport.origin = [(x / 2.0) - (vx / 2.0), 0.0];
+                } else {
+                    let vy = x/ratio;
+                    println!("({}, {})", x, vy);
+                    engine.viewport.dimensions = [x, vy];
+                    engine.viewport.origin = [0.0, (y / 2.0) - (vy / 2.0)];
                 }
 
                 engine.recreate_pipeline().unwrap();
