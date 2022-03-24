@@ -65,7 +65,7 @@ impl Input {
         );
     }
 
-    pub fn handle_movement(&self, engine: &mut Engine, x: f32, y: f32) {
+    fn handle_movement(&self, engine: &mut Engine, x: f32, y: f32) {
         let old_vertices = match engine.pop_polygon() {
             Some(p) => p,
             None => { return; }
