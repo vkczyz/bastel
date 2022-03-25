@@ -25,7 +25,7 @@ pub fn begin_loop(mut engine: Engine) {
     let mut recreate_swapchain = false;
     let mut previous_frame_end = Some(sync::now(engine.renderer.device.clone()).boxed());
 
-    let ratio = engine.renderer.viewport.dimensions[0] / engine.renderer.viewport.dimensions[1];
+    let ratio = engine.width / engine.height;
 
     engine.event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
@@ -42,17 +42,20 @@ pub fn begin_loop(mut engine: Engine) {
                 event: WindowEvent::Resized(size),
                 ..
             } => {
-                let x = size.width as f32;
-                let y = size.height as f32;
+                engine.width = size.width;
+                engine.height = size.height;
                 
+                let x = engine.width;
+                let y = engine.height;
+
                 if x > y {
                     let vx = y*ratio;
-                    engine.renderer.viewport.dimensions = [vx, y];
-                    engine.renderer.viewport.origin = [(x / 2.0) - (vx / 2.0), 0.0];
+                    engine.renderer.viewport.dimensions = [vx as f32, y as f32];
+                    engine.renderer.viewport.origin = [((x / 2) - (vx / 2)) as f32, 0.0];
                 } else {
                     let vy = x/ratio;
-                    engine.renderer.viewport.dimensions = [x, vy];
-                    engine.renderer.viewport.origin = [0.0, (y / 2.0) - (vy / 2.0)];
+                    engine.renderer.viewport.dimensions = [x as f32, vy as f32];
+                    engine.renderer.viewport.origin = [0.0, ((y / 2) - (vy / 2)) as f32];
                 }
 
                 engine.renderer.recreate_pipeline().unwrap();
