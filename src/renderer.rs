@@ -36,7 +36,7 @@ use vulkano::image::view::ImageView;
 use vulkano::render_pass::{Framebuffer, RenderPass};
 use winit::window::Window;
 
-pub struct Engine {
+pub struct Renderer {
     pub surface: Arc<Surface<Window>>,
     pub swapchain: Arc<Swapchain<Window>>,
     pub framebuffers: Vec<Arc<Framebuffer>>,
@@ -49,7 +49,7 @@ pub struct Engine {
     pub shaders: HashMap<String, Arc<ShaderModule>>,
 }
 
-impl Engine {
+impl Renderer {
     fn get_instance() -> Arc<Instance> {
         let instance = Instance::new(
             None,
@@ -153,7 +153,7 @@ impl Engine {
             };
 
         self.swapchain = swapchain;
-        self.framebuffers = Engine::window_size_dependent_setup(
+        self.framebuffers = Renderer::window_size_dependent_setup(
             &images,
             self.render_pass.clone(),
             &mut self.viewport,
@@ -195,15 +195,15 @@ impl Engine {
     }
 
     pub fn init(title: &str, width: u32, height: u32) -> (Self, EventLoop<()>) {
-        let instance = Engine::get_instance();
+        let instance = Renderer::get_instance();
         let event_loop = EventLoop::new();
-        let surface = Engine::get_surface(&event_loop, &instance, title);
+        let surface = Renderer::get_surface(&event_loop, &instance, title);
 
-        let (device, mut queues) = Engine::get_device_and_queues(&instance);
+        let (device, mut queues) = Renderer::get_device_and_queues(&instance);
         let queue = queues.next()
             .expect("Could not select queue");
 
-        let (swapchain, images) = Engine::get_swapchain(&surface, &device, &queue, &width, &height);
+        let (swapchain, images) = Renderer::get_swapchain(&surface, &device, &queue, &width, &height);
 
         vulkano::impl_vertex!(Vertex, position);
 
@@ -249,9 +249,9 @@ impl Engine {
             dimensions: [0.0, 0.0],
             depth_range: 0.0..1.0,
         };
-        let framebuffers = Engine::window_size_dependent_setup(&images, render_pass.clone(), &mut viewport);
+        let framebuffers = Renderer::window_size_dependent_setup(&images, render_pass.clone(), &mut viewport);
 
-        (Engine {
+        (Renderer {
             surface,
             swapchain,
             framebuffers,

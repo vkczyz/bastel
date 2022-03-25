@@ -1,5 +1,5 @@
 use bastel;
-use bastel::engine::Engine;
+use bastel::renderer::Renderer;
 
 fn main() {
     const TITLE: &str = "BASTEL";
@@ -7,6 +7,6 @@ fn main() {
     const HEIGHT: u32 = 600;
     const FPS: u64 = 60;
 
-    let (engine, event_loop) = Engine::init(TITLE, WIDTH, HEIGHT);
-    bastel::begin_loop(engine, event_loop, FPS);
+    let (renderer, event_loop) = Renderer::init(TITLE, WIDTH, HEIGHT);
+    bastel::begin_loop(renderer, event_loop, FPS);
 }

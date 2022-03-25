@@ -1,9 +1,9 @@
-pub mod engine;
+pub mod renderer;
 mod shaders;
 mod vertex;
 mod input;
 
-use engine::Engine;
+use renderer::Renderer;
 use input::Input;
 use vertex::Vertex;
 
@@ -17,15 +17,15 @@ use vulkano::command_buffer::SubpassContents;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 
-pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
+pub fn begin_loop(mut renderer: Renderer, event_loop: EventLoop<()>, fps: u64) {
     // Convert FPS to redraw frequency
     let freq_millis = 1000 / fps;
 
     let mut recreate_swapchain = false;
-    let mut previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
+    let mut previous_frame_end = Some(sync::now(renderer.device.clone()).boxed());
 
     let mut input_handler = Input::new();
-    let ratio = engine.viewport.dimensions[0] / engine.viewport.dimensions[1];
+    let ratio = renderer.viewport.dimensions[0] / renderer.viewport.dimensions[1];
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
@@ -47,15 +47,15 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 
                 if x > y {
                     let vx = y*ratio;
-                    engine.viewport.dimensions = [vx, y];
-                    engine.viewport.origin = [(x / 2.0) - (vx / 2.0), 0.0];
+                    renderer.viewport.dimensions = [vx, y];
+                    renderer.viewport.origin = [(x / 2.0) - (vx / 2.0), 0.0];
                 } else {
                     let vy = x/ratio;
-                    engine.viewport.dimensions = [x, vy];
-                    engine.viewport.origin = [0.0, (y / 2.0) - (vy / 2.0)];
+                    renderer.viewport.dimensions = [x, vy];
+                    renderer.viewport.origin = [0.0, (y / 2.0) - (vy / 2.0)];
                 }
 
-                engine.recreate_pipeline().unwrap();
+                renderer.recreate_pipeline().unwrap();
                 recreate_swapchain = true
             },
 
@@ -66,7 +66,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 },
                 ..
             } => {
-                input_handler.handle_input(&mut engine, input);
+                input_handler.handle_input(&mut renderer, input);
             }
 
             Event::WindowEvent {
@@ -86,8 +86,8 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                     Vertex{ position: [input_handler.cursor[0] as f32, input_handler.cursor[1] as f32 + 0.1] },
                 );
 
-                let vertex_buffer = Engine::create_polygon(vertices, &engine.device);
-                engine.add_polygon(vertex_buffer);
+                let vertex_buffer = Renderer::create_polygon(vertices, &renderer.device);
+                renderer.add_polygon(vertex_buffer);
             },
 
             Event::WindowEvent {
@@ -97,10 +97,10 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 },
                 ..
             } => {
-                let real_dims: [f32; 2] = engine.viewport.dimensions.into();
+                let real_dims: [f32; 2] = renderer.viewport.dimensions.into();
                 let view_dims: [f32; 2] = [
-                    real_dims[0] - 2.0 * engine.viewport.origin[0],
-                    real_dims[1] - 2.0 * engine.viewport.origin[1],
+                    real_dims[0] - 2.0 * renderer.viewport.origin[0],
+                    real_dims[1] - 2.0 * renderer.viewport.origin[1],
                 ];
 
                 let mut pos: [f32; 2] = position.into();
@@ -118,14 +118,14 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 previous_frame_end.as_mut().unwrap().cleanup_finished();
 
                 if recreate_swapchain {
-                    if let Err(_) = engine.recreate_swapchain() {
+                    if let Err(_) = renderer.recreate_swapchain() {
                         return;
                     }
                     recreate_swapchain = false;
                 }
 
                 let (image_num, suboptimal, acquire_future) =
-                    match engine.acquire_next_image() {
+                    match renderer.acquire_next_image() {
                         Ok(d) => d,
                         Err(_) => {
                             recreate_swapchain = true;
@@ -140,22 +140,22 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                 let clear_values = vec![[0.0, 0.0, 0.0].into()];
 
                 let mut builder = AutoCommandBufferBuilder::primary(
-                    engine.device.clone(),
-                    engine.queue.family(),
+                    renderer.device.clone(),
+                    renderer.queue.family(),
                     CommandBufferUsage::OneTimeSubmit,
                 ).unwrap();
 
                 builder
                     .begin_render_pass(
-                        engine.framebuffers[image_num].clone(),
+                        renderer.framebuffers[image_num].clone(),
                         SubpassContents::Inline,
                         clear_values,
                     )
                     .unwrap()
-                    .set_viewport(0, [engine.viewport.clone()])
-                    .bind_pipeline_graphics(engine.pipeline.clone());
+                    .set_viewport(0, [renderer.viewport.clone()])
+                    .bind_pipeline_graphics(renderer.pipeline.clone());
 
-                for buffer in &engine.vertex_buffers {
+                for buffer in &renderer.vertex_buffers {
                     builder
                         .bind_vertex_buffers(0, buffer.clone())
                         .draw(buffer.len() as u32, 1, 0, 0)
@@ -172,9 +172,9 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                     .take()
                     .unwrap()
                     .join(acquire_future)
-                    .then_execute(engine.queue.clone(), command_buffer)
+                    .then_execute(renderer.queue.clone(), command_buffer)
                     .unwrap()
-                    .then_swapchain_present(engine.queue.clone(), engine.swapchain.clone(), image_num)
+                    .then_swapchain_present(renderer.queue.clone(), renderer.swapchain.clone(), image_num)
                     .then_signal_fence_and_flush();
 
                 match future {
@@ -183,11 +183,11 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>, fps: u64) {
                     },
                     Err(FlushError::OutOfDate) => {
                         recreate_swapchain = true;
-                        previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
+                        previous_frame_end = Some(sync::now(renderer.device.clone()).boxed());
                     },
                     Err(e) => {
                         println!("Failed to flush future: {:?}", e);
-                        previous_frame_end = Some(sync::now(engine.device.clone()).boxed());
+                        previous_frame_end = Some(sync::now(renderer.device.clone()).boxed());
                     }
                 }
             }
