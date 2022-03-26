@@ -1,12 +1,14 @@
 pub mod engine;
 mod renderer;
 mod shaders;
+mod sprite;
 mod vertex;
 mod input;
 
 use engine::Engine;
+use input::Input;
 use renderer::Renderer;
-use vertex::Vertex;
+use sprite::Sprite;
 
 use std::time::{Duration, Instant};
 
@@ -26,6 +28,8 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
     let mut previous_frame_end = Some(sync::now(engine.renderer.device.clone()).boxed());
 
     let ratio = engine.width / engine.height;
+
+    let mut input_handler = Input::new();
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
@@ -69,7 +73,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                 },
                 ..
             } => {
-                engine.input.handle_input(&mut engine.renderer, input);
+                input_handler.handle_input(&mut engine, input);
             }
 
             Event::WindowEvent {
@@ -79,18 +83,15 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                 },
                 ..
             } => {
-                if !engine.input.is_valid_cursor_position() {
+                if !input_handler.is_valid_cursor_position() {
                     return;
                 }
 
-                let vertices = vec!(
-                    Vertex{ position: [engine.input.cursor[0] as f32, engine.input.cursor[1] as f32] },
-                    Vertex{ position: [engine.input.cursor[0] as f32 + 0.1, engine.input.cursor[1] as f32] },
-                    Vertex{ position: [engine.input.cursor[0] as f32, engine.input.cursor[1] as f32 + 0.1] },
+                let sprite = Sprite::new(
+                    (input_handler.cursor[0], input_handler.cursor[1]),
+                    (0.1, 0.1),
                 );
-
-                let vertex_buffer = Renderer::create_polygon(vertices, &engine.renderer.device);
-                engine.renderer.add_polygon(vertex_buffer);
+                engine.sprites.push(sprite);
             },
 
             Event::WindowEvent {
@@ -114,7 +115,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                 pos[0] *= real_dims[0] / view_dims[0];
                 pos[1] *= real_dims[1] / view_dims[1];
 
-                engine.input.cursor = pos;
+                input_handler.cursor = pos;
             }
 
             Event::RedrawEventsCleared => {
@@ -158,7 +159,9 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                     .set_viewport(0, [engine.renderer.viewport.clone()])
                     .bind_pipeline_graphics(engine.renderer.pipeline.clone());
 
-                for buffer in &engine.renderer.vertex_buffers {
+                for sprite in &engine.sprites {
+                    let buffer = Renderer::create_vertex_buffer(sprite.vertices.clone(), &engine.renderer.device);
+
                     builder
                         .bind_vertex_buffers(0, buffer.clone())
                         .draw(buffer.len() as u32, 1, 0, 0)

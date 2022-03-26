@@ -1,5 +1,6 @@
-use crate::Renderer;
-use crate::Vertex;
+use crate::Engine;
+use crate::Sprite;
+
 use winit::event::{ElementState, KeyboardInput};
 
 pub struct Input {
@@ -21,10 +22,10 @@ impl Input {
         }
     }
 
-    pub fn handle_input(&mut self, renderer: &mut Renderer, input: KeyboardInput) {
+    pub fn handle_input(&mut self, engine: &mut Engine, input: KeyboardInput) {
         let units: [f32; 2] = [
-            1.0 / renderer.surface.window().inner_size().width as f32,
-            1.0 / renderer.surface.window().inner_size().height as f32,
+            1.0 / engine.width as f32,
+            1.0 / engine.height as f32,
             ];
         let speed: f32 = 10.0;
         let factor = units.map(|u| u * speed);
@@ -59,26 +60,24 @@ impl Input {
         }
 
         self.handle_movement(
-            renderer,
+            engine,
             factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32)),
             factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32)),
         );
     }
 
-    fn handle_movement(&self, renderer: &mut Renderer, x: f32, y: f32) {
-        let old_vertices = match renderer.pop_polygon() {
+    fn handle_movement(&self, engine: &mut Engine, x: f32, y: f32) {
+        let old_sprite = match engine.sprites.pop() {
             Some(p) => p,
             None => { return; }
         };
-        let old_vertices = old_vertices.read().unwrap();
 
-        let new_vertices = old_vertices
-            .iter()
-            .map(|v| Vertex{ position: [v.position[0] + x, v.position[1] + y] })
-            .collect();
+        let new_sprite = Sprite::new(
+            (old_sprite.position.0 + x, old_sprite.position.1 + y),
+            old_sprite.size,
+        );
 
-        let vertex_buffer = Renderer::create_polygon(new_vertices, &renderer.device);
-        renderer.vertex_buffers.push(vertex_buffer);
+        engine.sprites.push(new_sprite);
     }
 
     pub fn is_valid_cursor_position(&self) -> bool {

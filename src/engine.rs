@@ -1,5 +1,6 @@
 use crate::renderer::Renderer;
 use crate::input::Input;
+use crate::sprite::Sprite;
 
 use winit::event_loop::EventLoop;
 
@@ -10,6 +11,7 @@ pub struct Engine {
     pub fps: u64,
     pub renderer: Renderer,
     pub input: Input,
+    pub sprites: Vec<Sprite>,
 }
 
 impl Engine {
@@ -25,6 +27,7 @@ impl Engine {
             fps,
             renderer,
             input,
+            sprites: vec![],
         }, event_loop)
     }
 }

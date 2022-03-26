@@ -45,7 +45,6 @@ pub struct Renderer {
     pub device: Arc<Device>,
     pub queue: Arc<Queue>,
     pub pipeline: Arc<GraphicsPipeline>,
-    pub vertex_buffers: Vec<Arc<CpuAccessibleBuffer<[Vertex]>>>,
     pub shaders: HashMap<String, Arc<ShaderModule>>,
 }
 
@@ -124,7 +123,7 @@ impl Renderer {
         (swapchain, images)
     }
 
-    pub fn create_polygon(vertices: Vec<Vertex>, device: &Arc<Device>) -> Arc<CpuAccessibleBuffer<[Vertex]>> {
+    pub fn create_vertex_buffer(vertices: Vec<Vertex>, device: &Arc<Device>) -> Arc<CpuAccessibleBuffer<[Vertex]>> {
         let vertex_buffer = CpuAccessibleBuffer::from_iter(
             device.clone(),
             BufferUsage::all(),
@@ -133,14 +132,6 @@ impl Renderer {
         ).expect("Failed to create buffer");
 
         vertex_buffer
-    }
-
-    pub fn add_polygon(&mut self, vertex_buffer: Arc<CpuAccessibleBuffer<[Vertex]>>) {
-        self.vertex_buffers.push(vertex_buffer);
-    }
-
-    pub fn pop_polygon(&mut self) -> Option<Arc<CpuAccessibleBuffer<[Vertex]>>> {
-        self.vertex_buffers.pop()
     }
 
     pub fn recreate_swapchain(&mut self) -> Result<(), ()> {
@@ -260,7 +251,6 @@ impl Renderer {
             device,
             queue,
             pipeline,
-            vertex_buffers: vec!(),
             shaders,
         }, event_loop)
     }
