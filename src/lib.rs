@@ -16,9 +16,9 @@ use vulkano::sync::{GpuFuture, FlushError};
 use vulkano::buffer::TypedBufferAccess;
 use vulkano::command_buffer::SubpassContents;
 use winit::event::{Event, WindowEvent};
-use winit::event_loop::ControlFlow;
+use winit::event_loop::{ControlFlow, EventLoop};
 
-pub fn begin_loop(mut engine: Engine) {
+pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
     // Convert FPS to redraw frequency
     let freq_millis = 1000 / engine.fps;
 
@@ -27,7 +27,7 @@ pub fn begin_loop(mut engine: Engine) {
 
     let ratio = engine.width / engine.height;
 
-    engine.event_loop.run(move |event, _, control_flow| {
+    event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::WaitUntil(
             Instant::now() + Duration::from_millis(freq_millis)
         );
