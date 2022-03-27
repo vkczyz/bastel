@@ -12,7 +12,7 @@ use shaders::Shader;
 use sprite::Sprite;
 
 use std::time::{Duration, Instant};
-use std::ffi::CString;
+use std::ffi::CStr;
 use std::os::raw::c_char;
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
@@ -24,13 +24,13 @@ use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 
 #[no_mangle]
-pub extern "C" fn init(title: *mut c_char, width: u32, height: u32) {
+pub extern "C" fn init(title: *const c_char, width: u32, height: u32) {
     let title = unsafe {
-        CString::from_raw(title)
-            .into_string()
+        CStr::from_ptr(title)
+            .to_str()
             .expect("Failed to decode title")
     };
-    let (engine, event_loop) = Engine::new(&title, width, height);
+    let (engine, event_loop) = Engine::new(title, width, height);
     begin_loop(engine, event_loop);
 }
 
