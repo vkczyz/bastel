@@ -15,7 +15,7 @@ use std::time::{Duration, Instant};
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
 use vulkano::sync;
 use vulkano::sync::{GpuFuture, FlushError};
-use vulkano::buffer::TypedBufferAccess;
+use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
 use vulkano::command_buffer::SubpassContents;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -160,11 +160,14 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                     .bind_pipeline_graphics(engine.renderer.pipeline.clone());
 
                 for sprite in &engine.sprites {
-                    let buffer = Renderer::create_vertex_buffer(sprite.vertices.clone(), &engine.renderer.device);
+                    let vertices = Renderer::create_vertex_buffer(sprite.vertices.clone(), &engine.renderer.device);
+                    let indices = CpuAccessibleBuffer::from_iter(engine.renderer.device.clone(), BufferUsage::all(), false, sprite.indices.clone())
+                        .expect("Failed to create buffer");
 
                     builder
-                        .bind_vertex_buffers(0, buffer.clone())
-                        .draw(buffer.len() as u32, 1, 0, 0)
+                        .bind_vertex_buffers(0, vertices.clone())
+                        .bind_index_buffer(indices.clone())
+                        .draw_indexed(indices.len() as u32, vertices.len() as u32, 0, 0, 0)
                         .unwrap();
                 }
 
