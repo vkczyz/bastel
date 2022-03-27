@@ -26,7 +26,7 @@ impl Input {
         let units: [f32; 2] = [
             1.0 / engine.width as f32,
             1.0 / engine.height as f32,
-            ];
+        ];
         let speed: f32 = 10.0;
         let factor = units.map(|u| u * speed);
 
@@ -67,6 +67,10 @@ impl Input {
     }
 
     fn handle_movement(&self, engine: &mut Engine, x: f32, y: f32) {
+        if engine.sprites.len() <= 1 {
+            return;
+        }
+
         let old_sprite = match engine.sprites.pop() {
             Some(p) => p,
             None => { return; }
