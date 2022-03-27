@@ -12,6 +12,8 @@ use shaders::Shader;
 use sprite::Sprite;
 
 use std::time::{Duration, Instant};
+use std::ffi::CString;
+use std::os::raw::c_char;
 
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage};
 use vulkano::sync;
@@ -20,6 +22,17 @@ use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
 use vulkano::command_buffer::SubpassContents;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
+
+#[no_mangle]
+pub extern "C" fn init(title: *mut c_char, width: u32, height: u32) {
+    let title = unsafe {
+        CString::from_raw(title)
+            .into_string()
+            .expect("Failed to decode title")
+    };
+    let (engine, event_loop) = Engine::new(&title, width, height);
+    begin_loop(engine, event_loop);
+}
 
 pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
     // Convert FPS to redraw frequency
