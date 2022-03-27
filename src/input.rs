@@ -75,6 +75,7 @@ impl Input {
         let new_sprite = Sprite::new(
             (old_sprite.position.0 + x, old_sprite.position.1 + y),
             old_sprite.size,
+            Some(old_sprite.shader),
         );
 
         engine.sprites.push(new_sprite);

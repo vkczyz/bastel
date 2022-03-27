@@ -30,6 +30,7 @@ impl Engine {
             sprites: vec![Sprite::new(
                 (-1.0, -1.0),
                 (2.0, 2.0),
+                None,
             )],
         }, event_loop)
     }

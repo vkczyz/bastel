@@ -8,6 +8,7 @@ mod input;
 use engine::Engine;
 use input::Input;
 use renderer::Renderer;
+use shaders::Shader;
 use sprite::Sprite;
 
 use std::time::{Duration, Instant};
@@ -62,7 +63,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                     engine.renderer.viewport.origin = [0.0, ((y / 2) - (vy / 2)) as f32];
                 }
 
-                engine.renderer.recreate_pipeline().unwrap();
+                engine.renderer.recreate_pipelines().unwrap();
                 recreate_swapchain = true
             },
 
@@ -90,6 +91,7 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                 let sprite = Sprite::new(
                     (input_handler.cursor[0], input_handler.cursor[1]),
                     (0.1, 0.1),
+                    Some(Shader::Rainbow),
                 );
                 engine.sprites.push(sprite);
             },
@@ -156,15 +158,16 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                         clear_values,
                     )
                     .unwrap()
-                    .set_viewport(0, [engine.renderer.viewport.clone()])
-                    .bind_pipeline_graphics(engine.renderer.pipeline.clone());
+                    .set_viewport(0, [engine.renderer.viewport.clone()]);
 
                 for sprite in &engine.sprites {
                     let vertices = Renderer::create_vertex_buffer(sprite.vertices.clone(), &engine.renderer.device);
                     let indices = CpuAccessibleBuffer::from_iter(engine.renderer.device.clone(), BufferUsage::all(), false, sprite.indices.clone())
                         .expect("Failed to create buffer");
+                    let pipeline = engine.renderer.pipelines[&sprite.shader].clone();
 
                     builder
+                        .bind_pipeline_graphics(pipeline)
                         .bind_vertex_buffers(0, vertices.clone())
                         .bind_index_buffer(indices.clone())
                         .draw_indexed(indices.len() as u32, vertices.len() as u32, 0, 0, 0)

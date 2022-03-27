@@ -21,7 +21,6 @@ use vulkano::pipeline::graphics::vertex_input::BuffersDefinition;
 use vulkano::pipeline::graphics::viewport::{Viewport, ViewportState};
 use vulkano::pipeline::GraphicsPipeline;
 use vulkano::render_pass::Subpass;
-use vulkano::shader::ShaderModule;
 use vulkano::swapchain::{self, AcquireError, Surface, Swapchain, SwapchainAcquireFuture, SwapchainCreationError};
 use vulkano::device::Queue;
 use vulkano::Version;
@@ -44,8 +43,7 @@ pub struct Renderer {
     pub render_pass: Arc<RenderPass>,
     pub device: Arc<Device>,
     pub queue: Arc<Queue>,
-    pub pipeline: Arc<GraphicsPipeline>,
-    pub shaders: HashMap<String, Arc<ShaderModule>>,
+    pub pipelines: HashMap<shaders::Shader, Arc<GraphicsPipeline>>,
 }
 
 impl Renderer {
@@ -153,21 +151,21 @@ impl Renderer {
         Ok(())
     }
 
-    pub fn recreate_pipeline(&mut self) -> Result<(), ()> {
+    pub fn recreate_pipelines(&mut self) -> Result<(), ()> {
         let viewport = self.viewport.clone();
-        let vs = self.shaders.get("vs").unwrap();
-        let fs = self.shaders.get("fs").unwrap();
 
-        let pipeline = GraphicsPipeline::start()
-            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
-            .vertex_shader(vs.entry_point("main").unwrap(), ())
-            .input_assembly_state(InputAssemblyState::new())
-            .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([viewport]))
-            .fragment_shader(fs.entry_point("main").unwrap(), ())
-            .render_pass(Subpass::from(self.render_pass.clone(), 0).unwrap())
-            .build(self.device.clone())
-            .unwrap();
-        self.pipeline = pipeline;
+        for (shader, pipeline) in self.pipelines.iter_mut() {
+            let shader = shaders::get_shaders(&shader, &self.device);
+            *pipeline = GraphicsPipeline::start()
+                .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
+                .vertex_shader(shader[0].entry_point("main").unwrap(), ())
+                .input_assembly_state(InputAssemblyState::new())
+                .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([viewport.clone()]))
+                .fragment_shader(shader[1].entry_point("main").unwrap(), ())
+                .render_pass(Subpass::from(self.render_pass.clone(), 0).unwrap())
+                .build(self.device.clone())
+                .unwrap();
+        }
 
         Ok(())
     }
@@ -214,26 +212,33 @@ impl Renderer {
             }
         ).expect("Failed to create render pass");
 
-        let shaders = HashMap::from([
-        (String::from("vs"), shaders::vs::load(device.clone()).expect("Failed to create shader module")),
-        (String::from("fs"), shaders::fs::load(device.clone()).expect("Failed to create shader module")),
-        ]);
-
         let viewport = Viewport {
             origin: [0.0, 0.0],
             dimensions: [width as f32, height as f32],
             depth_range: 0.0..1.0,
         };
 
-        let pipeline = GraphicsPipeline::start()
-            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
-            .vertex_shader(shaders.get("vs").unwrap().entry_point("main").unwrap(), ())
-            .input_assembly_state(InputAssemblyState::new())
-            .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([viewport]))
-            .fragment_shader(shaders.get("fs").unwrap().entry_point("main").unwrap(), ())
-            .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
-            .build(device.clone())
-            .unwrap();
+        let shaders = [
+            shaders::Shader::Solid,
+            shaders::Shader::Rainbow,
+        ];
+
+        let mut pipelines = HashMap::new();
+        for shader in shaders.iter() {
+            let s = shaders::get_shaders(shader, &device);
+            pipelines.insert(
+                shader.clone(),
+                GraphicsPipeline::start()
+                    .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
+                    .vertex_shader(s[0].entry_point("main").unwrap(), ())
+                    .input_assembly_state(InputAssemblyState::new())
+                    .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([viewport.clone()]))
+                    .fragment_shader(s[1].entry_point("main").unwrap(), ())
+                    .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
+                    .build(device.clone())
+                    .unwrap(),
+            );
+        }
 
         let mut viewport = Viewport {
             origin: [0.0, 0.0],
@@ -250,8 +255,7 @@ impl Renderer {
             render_pass,
             device,
             queue,
-            pipeline,
-            shaders,
+            pipelines,
         }, event_loop)
     }
 
