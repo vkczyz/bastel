@@ -27,7 +27,10 @@ impl Engine {
             fps,
             renderer,
             input,
-            sprites: vec![],
+            sprites: vec![Sprite::new(
+                (-1.0, -1.0),
+                (2.0, 2.0),
+            )],
         }, event_loop)
     }
 }
