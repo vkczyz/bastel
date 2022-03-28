@@ -1,21 +1,39 @@
 use crate::shaders::Shader;
 use crate::vertex::Vertex;
 
+use std::io;
+use std::io::prelude::*;
+use std::fs::File;
+use std::path::Path;
+
 pub struct Sprite {
     pub position: (f32, f32),
     pub size: (f32, f32),
     pub vertices: Vec<Vertex>,
     pub indices: Vec<u16>,
     pub shader: Shader,
+    pub texture: Option<Vec<u8>>,
 }
 
 impl Sprite {
     pub fn new(position: (f32, f32), size: (f32, f32), shader: Option<Shader>) -> Self {
         let vertices = vec!(
-            Vertex { position: [position.0, position.1] },
-            Vertex { position: [position.0, position.1 + size.1] },
-            Vertex { position: [position.0 + size.0, position.1 + size.1] },
-            Vertex { position: [position.0 + size.0, position.1] },
+            Vertex {
+                position: [position.0, position.1],
+                uv: [0.0, 0.0],
+            },
+            Vertex {
+                position: [position.0, position.1 + size.1],
+                uv: [0.0, 1.0],
+            },
+            Vertex {
+                position: [position.0 + size.0, position.1 + size.1],
+                uv: [1.0, 1.0],
+            },
+            Vertex {
+                position: [position.0 + size.0, position.1],
+                uv: [1.0, 0.0],
+            },
         );
         let indices = vec!(0, 1, 2, 2, 3, 0);
 
@@ -30,6 +48,18 @@ impl Sprite {
             vertices,
             indices,
             shader,
+            texture: None,
         }
+    }
+
+    pub fn add_texture(&mut self, path: &Path) -> io::Result<()> {
+        let path = path.to_str().ok_or(()).unwrap();
+        let mut f = File::open(path)?;
+
+        let mut data = vec![];
+        f.read_to_end(&mut data)?;
+
+        self.texture = Some(data);
+        Ok(())
     }
 }

@@ -1,9 +1,12 @@
 use crate::shaders;
 use crate::vertex::Vertex;
 
+use std::io::Cursor;
 use std::sync::Arc;
 use std::collections::HashMap;
 
+use vulkano::command_buffer::{CommandBufferExecFuture, PrimaryAutoCommandBuffer};
+use vulkano::format::Format;
 use vulkano::instance::Instance;
 use vulkano::device::{
     Device,
@@ -15,16 +18,18 @@ use vulkano::device::physical::{
     PhysicalDeviceType,
 };
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
-use vulkano::image::ImageUsage;
+use vulkano::image::{ImageUsage, ImageDimensions, MipmapsCount, ImmutableImage};
 use vulkano::pipeline::graphics::input_assembly::InputAssemblyState;
 use vulkano::pipeline::graphics::vertex_input::BuffersDefinition;
 use vulkano::pipeline::graphics::viewport::{Viewport, ViewportState};
 use vulkano::pipeline::GraphicsPipeline;
 use vulkano::render_pass::Subpass;
+use vulkano::sampler::{Filter, Sampler, SamplerMipmapMode, SamplerAddressMode};
 use vulkano::swapchain::{self, AcquireError, Surface, Swapchain, SwapchainAcquireFuture, SwapchainCreationError};
 use vulkano::device::Queue;
 use vulkano::Version;
 
+use vulkano::sync::NowFuture;
 use vulkano_win::create_vk_surface_from_handle;
 
 use winit::event_loop::EventLoop;
@@ -38,6 +43,7 @@ use winit::window::Window;
 pub struct Renderer {
     pub surface: Arc<Surface<Window>>,
     pub swapchain: Arc<Swapchain<Window>>,
+    pub sampler: Arc<Sampler>,
     pub framebuffers: Vec<Arc<Framebuffer>>,
     pub viewport: Viewport,
     pub render_pass: Arc<RenderPass>,
@@ -132,6 +138,53 @@ impl Renderer {
         vertex_buffer
     }
 
+    pub fn create_texture(&self, data : &[u8]) -> (Arc<ImageView<ImmutableImage>>, CommandBufferExecFuture<NowFuture, PrimaryAutoCommandBuffer>) {
+        let (texture, tex_future) = {
+            let cursor = Cursor::new(data);
+            let decoder = png::Decoder::new(cursor);
+            let mut reader = decoder.read_info().unwrap();
+            let info = reader.info();
+            let dims = ImageDimensions::Dim2d {
+                width: info.width,
+                height: info.height,
+                array_layers: 1,
+            };
+
+            let mut image_data = Vec::new();
+            let depth: u32 = match info.bit_depth {
+                png::BitDepth::One => 1,
+                png::BitDepth::Two => 2,
+                png::BitDepth::Four => 4,
+                png::BitDepth::Eight => 8,
+                png::BitDepth::Sixteen => 16,
+            };
+            image_data.resize((info.width * info.height * depth) as usize, 0);
+            reader.next_frame(&mut image_data).unwrap();
+            let (image, future) = ImmutableImage::from_iter(
+                image_data.iter().cloned(),
+                dims,
+                MipmapsCount::One,
+                Format::R8G8B8A8_SRGB,
+                self.queue.clone()
+            ).unwrap();
+            (ImageView::new(image).unwrap(), future)
+        };
+
+        (texture, tex_future)
+    }
+
+    pub fn create_sampler(&self) -> Arc<Sampler> {
+        let sampler = Sampler::start(self.device.clone())
+            .filter(Filter::Linear)
+            .address_mode(SamplerAddressMode::Repeat)
+            .mipmap_mode(SamplerMipmapMode::Nearest)
+            .mip_lod_bias(0.0)
+            .build()
+            .unwrap();
+
+        sampler
+    }
+
     pub fn recreate_swapchain(&mut self) -> Result<(), ()> {
         let dims: [u32; 2] = self.surface.window().inner_size().into();
         let (swapchain, images) =
@@ -194,7 +247,7 @@ impl Renderer {
 
         let (swapchain, images) = Renderer::get_swapchain(&surface, &device, &queue, &width, &height);
 
-        vulkano::impl_vertex!(Vertex, position);
+        vulkano::impl_vertex!(Vertex, position, uv);
 
         let render_pass = vulkano::single_pass_renderpass!(
             device.clone(),
@@ -212,6 +265,14 @@ impl Renderer {
             }
         ).expect("Failed to create render pass");
 
+        let sampler = Sampler::start(device.clone())
+            .filter(Filter::Linear)
+            .address_mode(SamplerAddressMode::Repeat)
+            .mipmap_mode(SamplerMipmapMode::Nearest)
+            .mip_lod_bias(0.0)
+            .build()
+            .unwrap();
+
         let viewport = Viewport {
             origin: [0.0, 0.0],
             dimensions: [width as f32, height as f32],
@@ -221,6 +282,7 @@ impl Renderer {
         let shaders = [
             shaders::Shader::Solid,
             shaders::Shader::Rainbow,
+            shaders::Shader::Texture,
         ];
 
         let mut pipelines = HashMap::new();
@@ -250,6 +312,7 @@ impl Renderer {
         (Renderer {
             surface,
             swapchain,
+            sampler,
             framebuffers,
             viewport,
             render_pass,

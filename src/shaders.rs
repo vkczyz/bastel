@@ -6,6 +6,7 @@ use vulkano::shader::ShaderModule;
 pub enum Shader {
     Solid,
     Rainbow,
+    Texture,
 }
 
 pub fn get_shaders(shader: &Shader, device: &Arc<Device>) -> Vec<Arc<ShaderModule>> {
@@ -17,6 +18,10 @@ pub fn get_shaders(shader: &Shader, device: &Arc<Device>) -> Vec<Arc<ShaderModul
         Shader::Rainbow => vec!(
             vs_rainbow::load(device.clone()).expect("Failed to create shader module"),
             fs_rainbow::load(device.clone()).expect("Failed to create shader module"),
+        ),
+        Shader::Texture => vec!(
+            vs_texture::load(device.clone()).expect("Failed to create shader module"),
+            fs_texture::load(device.clone()).expect("Failed to create shader module"),
         ),
     }
 }
@@ -46,5 +51,19 @@ pub mod fs_rainbow {
     vulkano_shaders::shader!{
         ty: "fragment",
         path: "shaders/rainbow.frag",
+    }
+}
+
+pub mod vs_texture {
+    vulkano_shaders::shader!{
+        ty: "vertex",
+        path: "shaders/texture.vert",
+    }
+}
+
+pub mod fs_texture {
+    vulkano_shaders::shader!{
+        ty: "fragment",
+        path: "shaders/texture.frag",
     }
 }

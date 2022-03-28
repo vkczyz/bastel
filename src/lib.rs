@@ -10,7 +10,10 @@ use input::Input;
 use renderer::Renderer;
 use shaders::Shader;
 use sprite::Sprite;
+use vulkano::descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet};
+use vulkano::pipeline::{Pipeline, PipelineBindPoint};
 
+use std::path::Path;
 use std::time::{Duration, Instant};
 use std::ffi::CStr;
 use std::os::raw::c_char;
@@ -101,11 +104,12 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                     return;
                 }
 
-                let sprite = Sprite::new(
+                let mut sprite = Sprite::new(
                     (input_handler.cursor[0], input_handler.cursor[1]),
                     (0.1, 0.1),
-                    Some(Shader::Rainbow),
+                    Some(Shader::Texture),
                 );
+                sprite.add_texture(Path::new("data/textures/test.png")).unwrap();
                 engine.sprites.push(sprite);
             },
 
@@ -180,7 +184,31 @@ pub fn begin_loop(mut engine: Engine, event_loop: EventLoop<()>) {
                     let pipeline = engine.renderer.pipelines[&sprite.shader].clone();
 
                     builder
-                        .bind_pipeline_graphics(pipeline)
+                        .bind_pipeline_graphics(pipeline.clone());
+
+                    if let Some(s) = &sprite.texture {
+                        let (texture, texture_future) = engine.renderer.create_texture(s);
+                        let layout = pipeline.layout().descriptor_set_layouts().get(0).unwrap();
+                        let set = PersistentDescriptorSet::new(
+                            layout.clone(),
+                            [WriteDescriptorSet::image_view_sampler(
+                                0,
+                                texture,
+                                engine.renderer.sampler.clone(),
+                            )],
+                        ).unwrap();
+
+                        previous_frame_end = Some(texture_future.boxed());
+
+                        builder.bind_descriptor_sets(
+                            PipelineBindPoint::Graphics,
+                            pipeline.layout().clone(),
+                            0,
+                            set.clone(),
+                        );
+                    }
+
+                    builder
                         .bind_vertex_buffers(0, vertices.clone())
                         .bind_index_buffer(indices.clone())
                         .draw_indexed(indices.len() as u32, vertices.len() as u32, 0, 0, 0)
