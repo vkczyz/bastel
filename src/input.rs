@@ -22,14 +22,7 @@ impl Input {
         }
     }
 
-    pub fn handle_input(&mut self, engine: &mut Engine, input: KeyboardInput) {
-        let units: [f32; 2] = [
-            1.0 / engine.width as f32,
-            1.0 / engine.height as f32,
-        ];
-        let speed: f32 = 10.0;
-        let factor = units.map(|u| u * speed);
-
+    pub fn handle_input(&mut self, input: KeyboardInput) {
         match input.scancode {
             // Clockwise arrow keys
             103 | 17 => {
@@ -58,15 +51,12 @@ impl Input {
             },
             _ => {},
         }
-
-        self.handle_movement(
-            engine,
-            factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32)),
-            factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32)),
-        );
     }
 
-    fn handle_movement(&self, engine: &mut Engine, x: f32, y: f32) {
+    pub fn handle_movement(&self, engine: &mut Engine, factor: &[f32]) {
+        let x = factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32));
+        let y = factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32));
+
         if engine.sprites.len() <= 1 {
             return;
         }

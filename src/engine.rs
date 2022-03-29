@@ -99,7 +99,7 @@ impl Engine {
                     },
                     ..
                 } => {
-                    input_handler.handle_input(&mut self, input);
+                    input_handler.handle_input(input);
                 }
 
                 Event::WindowEvent {
@@ -147,6 +147,18 @@ impl Engine {
                 }
 
                 Event::RedrawEventsCleared => {
+                    let units: [f32; 2] = [
+                        1.0 / self.width as f32,
+                        1.0 / self.height as f32,
+                    ];
+                    let speed: f32 = 10.0;
+                    let factor = units.map(|u| u * speed);
+
+                    input_handler.handle_movement(
+                        &mut self,
+                        &factor,
+                    );
+
                     previous_frame_end.as_mut().unwrap().cleanup_finished();
 
                     if recreate_swapchain {
