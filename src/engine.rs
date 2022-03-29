@@ -118,7 +118,7 @@ impl Engine {
                     let mut sprite = Sprite::new(
                         (input_handler.cursor[0], input_handler.cursor[1]),
                         (0.1, 0.1),
-                        Some(Shader::Rainbow),
+                        Some(Shader::Texture),
                     );
                     sprite.add_texture(Path::new("data/textures/test.png")).unwrap();
                     self.sprites.push(sprite);
@@ -199,29 +199,26 @@ impl Engine {
                         builder
                             .bind_pipeline_graphics(pipeline.clone());
 
-                        if sprite.shader == Shader::Texture {
-                            if let Some(s) = &sprite.texture {
-
-                                let (texture, texture_future) = self.renderer.create_texture(s);
-                                let layout = pipeline.layout().descriptor_set_layouts().get(0).unwrap();
-                                let set = PersistentDescriptorSet::new(
-                                    layout.clone(),
-                                    [WriteDescriptorSet::image_view_sampler(
-                                        0,
-                                        texture,
-                                        self.renderer.sampler.clone(),
-                                    )],
-                                ).unwrap();
-
-                                previous_frame_end = Some(texture_future.boxed());
-
-                                builder.bind_descriptor_sets(
-                                    PipelineBindPoint::Graphics,
-                                    pipeline.layout().clone(),
+                        if let (Shader::Texture, Some(s)) = (sprite.shader, &sprite.texture) {
+                            let (texture, texture_future) = self.renderer.create_texture(s);
+                            let layout = pipeline.layout().descriptor_set_layouts().get(0).unwrap();
+                            let set = PersistentDescriptorSet::new(
+                                layout.clone(),
+                                [WriteDescriptorSet::image_view_sampler(
                                     0,
-                                    set.clone(),
-                                );
-                            }
+                                    texture,
+                                    self.renderer.sampler.clone(),
+                                )],
+                            ).unwrap();
+
+                            previous_frame_end = Some(texture_future.boxed());
+
+                            builder.bind_descriptor_sets(
+                                PipelineBindPoint::Graphics,
+                                pipeline.layout().clone(),
+                                0,
+                                set.clone(),
+                            );
                         }
 
                         builder

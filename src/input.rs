@@ -66,11 +66,12 @@ impl Input {
             None => { return; }
         };
 
-        let new_sprite = Sprite::new(
+        let mut new_sprite = Sprite::new(
             (old_sprite.position.0 + x, old_sprite.position.1 + y),
             old_sprite.size,
             Some(old_sprite.shader),
         );
+        new_sprite.texture = old_sprite.texture;
 
         engine.sprites.push(new_sprite);
     }
