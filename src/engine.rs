@@ -116,7 +116,7 @@ impl Engine {
                     let mut sprite = Sprite::new(
                         (input_handler.cursor[0], input_handler.cursor[1]),
                         (0.1, 0.1),
-                        Some(Shader::Texture),
+                        Some(Shader::Rainbow),
                     );
                     sprite.add_texture(Path::new("data/textures/test.png")).unwrap();
                     self.sprites.push(sprite);
@@ -147,17 +147,7 @@ impl Engine {
                 }
 
                 Event::RedrawEventsCleared => {
-                    let units: [f32; 2] = [
-                        1.0 / self.width as f32,
-                        1.0 / self.height as f32,
-                    ];
-                    let speed: f32 = 10.0;
-                    let factor = units.map(|u| u * speed);
-
-                    input_handler.handle_movement(
-                        &mut self,
-                        &factor,
-                    );
+                    self.update_position(&input_handler);
 
                     previous_frame_end.as_mut().unwrap().cleanup_finished();
 
@@ -207,7 +197,9 @@ impl Engine {
                         builder
                             .bind_pipeline_graphics(pipeline.clone());
 
+                        /*
                         if let Some(s) = &sprite.texture {
+
                             let (texture, texture_future) = self.renderer.create_texture(s);
                             let layout = pipeline.layout().descriptor_set_layouts().get(0).unwrap();
                             let set = PersistentDescriptorSet::new(
@@ -228,6 +220,7 @@ impl Engine {
                                 set.clone(),
                             );
                         }
+                        */
 
                         builder
                             .bind_vertex_buffers(0, vertices.clone())
@@ -269,4 +262,19 @@ impl Engine {
             }
         });
     }
+
+    fn update_position(&mut self, input: &Input) {
+        let units: [f32; 2] = [
+            1.0 / self.width as f32,
+            1.0 / self.height as f32,
+        ];
+        let speed: f32 = 10.0;
+        let factor = units.map(|u| u * speed);
+
+        input.handle_movement(
+            self,
+            &factor,
+        );
+    }
+
 }
