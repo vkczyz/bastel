@@ -67,7 +67,7 @@ impl Input {
         };
 
         let mut new_sprite = Sprite::new(
-            (old_sprite.position.0 + x, old_sprite.position.1 + y),
+            Input::normalise_position(old_sprite.position.0 + x, old_sprite.position.1 + y, old_sprite.size),
             old_sprite.size,
             Some(old_sprite.shader),
         );
@@ -80,5 +80,25 @@ impl Input {
         if self.cursor[0] < -1.0 || self.cursor[0] > 1.0 { return false; }
         if self.cursor[1] < -1.0 || self.cursor[1] > 1.0 { return false; }
         true
+    }
+
+    fn normalise_position(x: f32, y: f32, size: (f32, f32)) -> (f32, f32) {
+        let bounds: ((f32, f32), (f32, f32)) = (
+            (-1.0, 1.0 - size.0),
+            (-1.0, 1.0 - size.1),
+        );
+
+        (
+            match x {
+                p if p < bounds.0.0 => bounds.0.0,
+                p if p > bounds.0.1 => bounds.0.1,
+                p => p,
+            },
+            match y {
+                p if p < bounds.1.0 => bounds.1.0,
+                p if p > bounds.1.1 => bounds.1.1,
+                p => p,
+            },
+        )
     }
 }
