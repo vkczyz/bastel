@@ -19,6 +19,7 @@ pub struct Engine {
     pub title: String,
     pub width: u32,
     pub height: u32,
+    pub resolution: (u32, u32),
     pub fps: u64,
     pub renderer: Renderer,
     pub input: Input,
@@ -35,6 +36,7 @@ impl Engine {
             title: String::from(title),
             width,
             height,
+            resolution: (width, height),
             fps,
             renderer,
             input,
@@ -265,8 +267,8 @@ impl Engine {
 
     fn update_position(&mut self, input: &Input) {
         let units: [f32; 2] = [
-            1.0 / self.width as f32,
-            1.0 / self.height as f32,
+            1.0 / self.resolution.0 as f32,
+            1.0 / self.resolution.1 as f32,
         ];
         let speed: f32 = 10.0;
         let factor = units.map(|u| u * speed);
