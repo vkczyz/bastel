@@ -19,6 +19,7 @@ use vulkano::device::physical::{
 };
 use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
 use vulkano::image::{ImageUsage, ImageDimensions, MipmapsCount, ImmutableImage};
+use vulkano::pipeline::graphics::color_blend::ColorBlendState;
 use vulkano::pipeline::graphics::input_assembly::InputAssemblyState;
 use vulkano::pipeline::graphics::vertex_input::BuffersDefinition;
 use vulkano::pipeline::graphics::viewport::{Viewport, ViewportState};
@@ -209,13 +210,16 @@ impl Renderer {
 
         for (shader, pipeline) in self.pipelines.iter_mut() {
             let shader = shaders::get_shaders(&shader, &self.device);
+            let subpass = Subpass::from(self.render_pass.clone(), 0).unwrap();
+
             *pipeline = GraphicsPipeline::start()
                 .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
                 .vertex_shader(shader[0].entry_point("main").unwrap(), ())
                 .input_assembly_state(InputAssemblyState::new())
                 .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([viewport.clone()]))
                 .fragment_shader(shader[1].entry_point("main").unwrap(), ())
-                .render_pass(Subpass::from(self.render_pass.clone(), 0).unwrap())
+                .color_blend_state(ColorBlendState::new(subpass.num_color_attachments()).blend_alpha())
+                .render_pass(subpass)
                 .build(self.device.clone())
                 .unwrap();
         }
