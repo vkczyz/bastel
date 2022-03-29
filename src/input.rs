@@ -1,5 +1,5 @@
-use crate::Engine;
-use crate::Sprite;
+use crate::engine::Engine;
+use crate::sprite::Sprite;
 
 use winit::event::{ElementState, KeyboardInput};
 
