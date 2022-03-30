@@ -1,5 +1,6 @@
 use crate::renderer::Renderer;
 use crate::input::Input;
+use crate::scene::Scene;
 use crate::shaders::Shader;
 use crate::sprite::Sprite;
 use crate::entity::Entity;
@@ -24,8 +25,7 @@ pub struct Engine {
     pub fps: u64,
     pub renderer: Renderer,
     pub input: Input,
-    pub entities: Vec<Entity>,
-    pub player_index: usize,
+    pub scene: Scene,
 }
 
 impl Engine {
@@ -59,8 +59,10 @@ impl Engine {
             fps,
             renderer,
             input,
-            entities: entities,
-            player_index: 1,
+            scene: Scene::new(
+                entities,
+                1,
+            ),
         }, event_loop)
     }
 
@@ -137,8 +139,8 @@ impl Engine {
                         Some(Shader::Texture),
                     );
                     sprite.add_texture(Path::new("data/textures/test.png")).unwrap();
-                    self.entities.insert(self.player_index, Entity::new(sprite));
-                    self.player_index += 1;
+                    self.scene.entities.insert(self.scene.player_index, Entity::new(sprite));
+                    self.scene.player_index += 1;
                 },
 
                 Event::WindowEvent {
@@ -207,7 +209,7 @@ impl Engine {
                         .unwrap()
                         .set_viewport(0, [self.renderer.viewport.clone()]);
 
-                    for entity in &self.entities {
+                    for entity in &self.scene.entities {
                         let sprite = &entity.sprite;
                         let vertices = Renderer::create_vertex_buffer(sprite.vertices.clone(), &self.renderer.device);
                         let indices = CpuAccessibleBuffer::from_iter(self.renderer.device.clone(), BufferUsage::all(), false, sprite.indices.clone())
@@ -288,7 +290,7 @@ impl Engine {
         let speed: f32 = 10.0;
         let factor = units.map(|u| u * speed);
 
-        let player = &mut self.entities[self.player_index];
+        let player = &mut self.scene.entities[self.scene.player_index];
 
         input.handle_movement(
             player,

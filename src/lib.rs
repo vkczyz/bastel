@@ -1,8 +1,9 @@
 pub mod engine;
-mod entity;
+pub mod entity;
+pub mod scene;
+pub mod sprite;
 mod renderer;
 mod shaders;
-mod sprite;
 mod vertex;
 mod input;
 
