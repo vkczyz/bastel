@@ -1,4 +1,5 @@
 pub mod engine;
+mod entity;
 mod renderer;
 mod shaders;
 mod sprite;

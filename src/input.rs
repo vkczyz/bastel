@@ -1,4 +1,4 @@
-use crate::engine::Engine;
+use crate::entity::Entity;
 use crate::sprite::Sprite;
 
 use winit::event::{ElementState, KeyboardInput};
@@ -53,16 +53,16 @@ impl Input {
         }
     }
 
-    pub fn handle_movement(&self, engine: &mut Engine, factor: &[f32]) {
+    pub fn handle_movement(&self, entities: &mut Vec<Entity>, factor: &[f32]) {
         let x = factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32));
         let y = factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32));
 
-        if engine.sprites.len() <= 1 {
+        if entities.len() <= 1 {
             return;
         }
 
-        let old_sprite = match engine.sprites.pop() {
-            Some(p) => p,
+        let old_sprite = match entities.pop() {
+            Some(p) => p.sprite,
             None => { return; }
         };
 
@@ -73,7 +73,7 @@ impl Input {
         );
         new_sprite.texture = old_sprite.texture;
 
-        engine.sprites.push(new_sprite);
+        entities.push(Entity::new(new_sprite));
     }
 
     pub fn is_valid_cursor_position(&self) -> bool {

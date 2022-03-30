@@ -2,6 +2,7 @@ use crate::renderer::Renderer;
 use crate::input::Input;
 use crate::shaders::Shader;
 use crate::sprite::Sprite;
+use crate::entity::Entity;
 
 use std::path::Path;
 use std::time::{Duration, Instant};
@@ -23,7 +24,7 @@ pub struct Engine {
     pub fps: u64,
     pub renderer: Renderer,
     pub input: Input,
-    pub sprites: Vec<Sprite>,
+    pub entities: Vec<Entity>,
 }
 
 impl Engine {
@@ -40,11 +41,15 @@ impl Engine {
             fps,
             renderer,
             input,
-            sprites: vec![Sprite::new(
-                (-1.0, -1.0),
-                (2.0, 2.0),
-                None,
-            )],
+            entities: vec![
+                Entity::new(
+                    Sprite::new(
+                        (-1.0, -1.0),
+                        (2.0, 2.0),
+                        None,
+                    )
+                ),
+            ],
         }, event_loop)
     }
 
@@ -121,7 +126,7 @@ impl Engine {
                         Some(Shader::Texture),
                     );
                     sprite.add_texture(Path::new("data/textures/test.png")).unwrap();
-                    self.sprites.push(sprite);
+                    self.entities.push(Entity::new(sprite));
                 },
 
                 Event::WindowEvent {
@@ -190,7 +195,8 @@ impl Engine {
                         .unwrap()
                         .set_viewport(0, [self.renderer.viewport.clone()]);
 
-                    for sprite in &self.sprites {
+                    for entity in &self.entities {
+                        let sprite = &entity.sprite;
                         let vertices = Renderer::create_vertex_buffer(sprite.vertices.clone(), &self.renderer.device);
                         let indices = CpuAccessibleBuffer::from_iter(self.renderer.device.clone(), BufferUsage::all(), false, sprite.indices.clone())
                             .expect("Failed to create buffer");
@@ -271,7 +277,7 @@ impl Engine {
         let factor = units.map(|u| u * speed);
 
         input.handle_movement(
-            self,
+            &mut self.entities,
             &factor,
         );
     }
