@@ -138,7 +138,10 @@ impl Engine {
                         (0.1, 0.1),
                         Some(Shader::Texture),
                     );
-                    sprite.add_texture(Path::new("data/textures/test.png")).unwrap();
+                    if let Err(e) = sprite.add_texture(Path::new("data/textures/test.png")) {
+                        sprite.shader = Shader::Rainbow;
+                        println!("{}", e);
+                    }
                     self.scene.entities.insert(self.scene.player_index, Entity::new(sprite));
                     self.scene.player_index += 1;
                 },
