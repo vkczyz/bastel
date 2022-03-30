@@ -25,6 +25,7 @@ pub struct Engine {
     pub renderer: Renderer,
     pub input: Input,
     pub entities: Vec<Entity>,
+    pub player_index: usize,
 }
 
 impl Engine {
@@ -32,6 +33,23 @@ impl Engine {
         let (renderer, event_loop) = Renderer::init(title, width, height);
         let input = Input::new();
         let fps = 60;
+
+        let entities = vec![
+            Entity::new(
+                Sprite::new(
+                    (-1.0, -1.0),
+                    (2.0, 2.0),
+                    None,
+                )
+            ),
+            Entity::new(
+                Sprite::new(
+                    (-0.5, -0.5),
+                    (0.1, 0.1),
+                    Some(Shader::Rainbow),
+                )
+            ),
+        ];
 
         (Engine {
             title: String::from(title),
@@ -41,15 +59,8 @@ impl Engine {
             fps,
             renderer,
             input,
-            entities: vec![
-                Entity::new(
-                    Sprite::new(
-                        (-1.0, -1.0),
-                        (2.0, 2.0),
-                        None,
-                    )
-                ),
-            ],
+            entities: entities,
+            player_index: 1,
         }, event_loop)
     }
 
@@ -126,7 +137,8 @@ impl Engine {
                         Some(Shader::Texture),
                     );
                     sprite.add_texture(Path::new("data/textures/test.png")).unwrap();
-                    self.entities.push(Entity::new(sprite));
+                    self.entities.insert(self.player_index, Entity::new(sprite));
+                    self.player_index += 1;
                 },
 
                 Event::WindowEvent {
@@ -276,8 +288,10 @@ impl Engine {
         let speed: f32 = 10.0;
         let factor = units.map(|u| u * speed);
 
+        let player = &mut self.entities[self.player_index];
+
         input.handle_movement(
-            &mut self.entities,
+            player,
             &factor,
         );
     }

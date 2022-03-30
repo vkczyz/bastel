@@ -53,27 +53,19 @@ impl Input {
         }
     }
 
-    pub fn handle_movement(&self, entities: &mut Vec<Entity>, factor: &[f32]) {
+    pub fn handle_movement(&self, player: &mut Entity, factor: &[f32]) {
         let x = factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32));
         let y = factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32));
 
-        if entities.len() <= 1 {
-            return;
-        }
-
-        let old_sprite = match entities.pop() {
-            Some(p) => p.sprite,
-            None => { return; }
-        };
-
+        let old_sprite = &player.sprite;
         let mut new_sprite = Sprite::new(
             Input::normalise_position(old_sprite.position.0 + x, old_sprite.position.1 + y, old_sprite.size),
             old_sprite.size,
             Some(old_sprite.shader),
         );
-        new_sprite.texture = old_sprite.texture;
+        new_sprite.texture = old_sprite.texture.clone();
 
-        entities.push(Entity::new(new_sprite));
+        player.sprite = new_sprite;
     }
 
     pub fn is_valid_cursor_position(&self) -> bool {
