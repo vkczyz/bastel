@@ -2,6 +2,7 @@ pub mod engine;
 pub mod entity;
 pub mod scene;
 pub mod sprite;
+mod physics;
 mod renderer;
 mod shaders;
 mod vertex;
