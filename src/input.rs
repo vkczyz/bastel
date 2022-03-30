@@ -1,4 +1,4 @@
-use crate::entity::Entity;
+use crate::{entity::Entity, physics::Physics};
 use crate::sprite::Sprite;
 
 use winit::event::{ElementState, KeyboardInput};
@@ -53,13 +53,30 @@ impl Input {
         }
     }
 
-    pub fn handle_movement(&self, player: &mut Entity, factor: &[f32]) {
-        let x = factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32));
-        let y = factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32));
+    pub fn handle_movement(&self, player: &mut Entity, global: &Physics, factor: &[f32]) {
+        let local = &mut player.physics;
+
+        local.acceleration.0 += factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32));
+        local.acceleration.1 += factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32));
+
+        let resultant = Physics::resultant(local, global);
+        local.update_position();
+
+        let (x, y) = resultant.position;
 
         let old_sprite = &player.sprite;
+        let normalised_pos = Input::normalise_position(old_sprite.position.0 + x, old_sprite.position.1 + y, old_sprite.size);
+
+        // Reset acceleration when collision with wall
+        if normalised_pos.0 != old_sprite.position.0 + x {
+            local.acceleration.0 = 0.0;
+        }
+        if normalised_pos.1 != old_sprite.position.1 + y {
+            local.acceleration.1 = 0.0;
+        }
+
         let mut new_sprite = Sprite::new(
-            Input::normalise_position(old_sprite.position.0 + x, old_sprite.position.1 + y, old_sprite.size),
+            normalised_pos,
             old_sprite.size,
             Some(old_sprite.shader),
         );

@@ -1,9 +1,9 @@
-use crate::renderer::Renderer;
+use crate::entity::Entity;
 use crate::input::Input;
+use crate::renderer::Renderer;
 use crate::scene::Scene;
 use crate::shaders::Shader;
 use crate::sprite::Sprite;
-use crate::entity::Entity;
 
 use std::path::Path;
 use std::time::{Duration, Instant};
@@ -283,18 +283,20 @@ impl Engine {
     }
 
     fn update_position(&mut self, input: &Input) {
-        let units: [f32; 2] = [
+        let units = [
             1.0 / self.resolution.0 as f32,
             1.0 / self.resolution.1 as f32,
         ];
-        let speed: f32 = 10.0;
-        let factor = units.map(|u| u * speed);
 
         let player = &mut self.scene.entities[self.scene.player_index];
 
         input.handle_movement(
             player,
-            &factor,
+            &self.scene.physics,
+            &[
+                units[0] / 2.0,
+                units[1] / 2.0,
+                ],
         );
     }
 
