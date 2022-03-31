@@ -1,4 +1,4 @@
-use crate::entity::Entity;
+use crate::entity::{Entity, Direction};
 use crate::input::Input;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
@@ -275,7 +275,7 @@ impl Engine {
         ];
 
         let player = &self.scene.entities[self.scene.player_index];
-        let mut collision = false;
+        let mut collision = None;
 
         // Collision check
         for entity in self.scene.entities.iter() {
@@ -287,15 +287,23 @@ impl Engine {
             }
 
             if Entity::are_colliding(player, entity) {
-                collision = true;
+                collision = Some(
+                    Entity::get_collision_direction(player, entity)
+                );
             }
         }
 
         let player = &mut self.scene.entities[self.scene.player_index];
 
-        if collision == true {
-            player.physics.acceleration.0 *= -1.0;
-            player.physics.acceleration.1 *= -1.0;
+        if let Some(c) = collision {
+            match c {
+                Direction::Left | Direction::Right => {
+                    player.physics.acceleration.1 *= -1.0;
+                },
+                Direction::Up | Direction::Down => {
+                    player.physics.acceleration.0 *= -1.0;
+                },
+            }
         }
 
         input.handle_movement(
