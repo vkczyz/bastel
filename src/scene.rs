@@ -9,10 +9,13 @@ pub struct Scene {
 
 impl Scene {
     pub fn new(entities: Vec<Entity>, player_index: usize) -> Self {
+        let mut physics = Physics::new();
+        physics.acceleration.1 = 0.001;
+
         Scene {
             entities,
             player_index,
-            physics: Physics::new(),
+            physics,
         }
     }
 }

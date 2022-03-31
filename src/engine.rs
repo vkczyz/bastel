@@ -297,8 +297,8 @@ impl Engine {
             player,
             &self.scene.physics,
             &[
-                units[0] / 2.0,
-                units[1] / 2.0,
+                units[0] * 0.2,
+                units[1] * 0.2,
                 ],
         );
     }

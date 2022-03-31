@@ -60,27 +60,24 @@ impl Input {
         local.acceleration.1 += factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32));
 
         let resultant = Physics::resultant(local, global);
-        local.update_position();
 
-        let (x, y) = resultant.position;
-
-        let old_sprite = &player.sprite;
-        let normalised_pos = Input::normalise_position(old_sprite.position.0 + x, old_sprite.position.1 + y, old_sprite.size);
+        let pos = resultant.get_position_delta();
+        let norm_pos = Input::normalise_position(player.sprite.position.0 + pos.0, player.sprite.position.1 + pos.1, player.sprite.size);
 
         // Reset acceleration when collision with wall
-        if normalised_pos.0 != old_sprite.position.0 + x {
+        if norm_pos.0 != player.sprite.position.0 + pos.0 {
             local.acceleration.0 = 0.0;
         }
-        if normalised_pos.1 != old_sprite.position.1 + y {
+        if norm_pos.1 != player.sprite.position.1 + pos.1 {
             local.acceleration.1 = 0.0;
         }
 
         let mut new_sprite = Sprite::new(
-            normalised_pos,
-            old_sprite.size,
-            Some(old_sprite.shader),
+            norm_pos,
+            player.sprite.size,
+            Some(player.sprite.shader),
         );
-        new_sprite.texture = old_sprite.texture.clone();
+        new_sprite.texture = player.sprite.texture.clone();
 
         player.sprite = new_sprite;
     }
