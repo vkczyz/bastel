@@ -6,6 +6,7 @@ use std::io::prelude::*;
 use std::fs::File;
 use std::path::Path;
 
+#[derive(PartialEq)]
 pub struct Sprite {
     pub position: (f32, f32),
     pub size: (f32, f32),
@@ -61,5 +62,21 @@ impl Sprite {
 
         self.texture = Some(data);
         Ok(())
+    }
+
+    pub fn get_left_pos(&self) -> f32 {
+        self.position.0
+    }
+
+    pub fn get_right_pos(&self) -> f32 {
+        self.position.0 + self.size.0
+    }
+
+    pub fn get_top_pos(&self) -> f32 {
+        self.position.1
+    }
+
+    pub fn get_bottom_pos(&self) -> f32 {
+        self.position.1 + self.size.1
     }
 }

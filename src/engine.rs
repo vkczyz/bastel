@@ -34,23 +34,6 @@ impl Engine {
         let input = Input::new();
         let fps = 60;
 
-        let entities = vec![
-            Entity::new(
-                Sprite::new(
-                    (-1.0, -1.0),
-                    (2.0, 2.0),
-                    None,
-                )
-            ),
-            Entity::new(
-                Sprite::new(
-                    (-0.5, -0.5),
-                    (0.1, 0.1),
-                    Some(Shader::Rainbow),
-                )
-            ),
-        ];
-
         (Engine {
             title: String::from(title),
             width,
@@ -60,7 +43,7 @@ impl Engine {
             renderer,
             input,
             scene: Scene::new(
-                entities,
+                vec![],
                 1,
             ),
         }, event_loop)
@@ -142,7 +125,7 @@ impl Engine {
                         sprite.shader = Shader::Rainbow;
                         println!("{}", e);
                     }
-                    self.scene.entities.insert(self.scene.player_index, Entity::new(sprite));
+                    self.scene.entities.insert(self.scene.player_index, Entity::new(sprite, true));
                     self.scene.player_index += 1;
                 },
 
@@ -291,7 +274,29 @@ impl Engine {
             1.0 / self.resolution.1 as f32,
         ];
 
+        let player = &self.scene.entities[self.scene.player_index];
+        let mut collision = false;
+
+        // Collision check
+        for entity in self.scene.entities.iter() {
+            if !entity.collideable {
+                continue;
+            }
+            if entity == player {
+                continue;
+            }
+
+            if Entity::are_colliding(player, entity) {
+                collision = true;
+            }
+        }
+
         let player = &mut self.scene.entities[self.scene.player_index];
+
+        if collision == true {
+            player.physics.acceleration.0 *= -1.0;
+            player.physics.acceleration.1 *= -1.0;
+        }
 
         input.handle_movement(
             player,

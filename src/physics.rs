@@ -1,3 +1,4 @@
+#[derive(PartialEq)]
 pub struct Physics {
     pub velocity: (f32, f32),
     pub acceleration: (f32, f32),
