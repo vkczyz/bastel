@@ -17,52 +17,47 @@ impl Scene {
         let entities = vec![
             // Background
             Entity::new(
-                Sprite::new(
+                Sprite::with_color(
                     (-1.0, -1.0),
                     (2.0, 2.0),
-                    None,
+                    [0.1, 0.1, 0.1],
                 ),
                 false,
             ),
             // Player
             Entity::new(
-                Sprite::new(
+                Sprite::rainbow(
                     (-0.5, -0.5),
                     (0.1, 0.1),
-                    Some(Shader::Rainbow),
                 ),
                 true,
             ),
             // Borders
             Entity::new(
-                Sprite::new(
+                Sprite::invisible(
                     (-1.0, -1.0),
                     (0.0, 2.0),
-                    Some(Shader::Solid),
                 ),
                 true,
             ),
             Entity::new(
-                Sprite::new(
+                Sprite::invisible(
                     (-1.0, -1.0),
                     (2.0, 0.0),
-                    Some(Shader::Solid),
                 ),
                 true,
             ),
             Entity::new(
-                Sprite::new(
+                Sprite::invisible(
                     (-1.0, 1.0),
                     (2.0, 0.0),
-                    Some(Shader::Solid),
                 ),
                 true,
             ),
             Entity::new(
-                Sprite::new(
+                Sprite::invisible(
                     (1.0, -1.0),
                     (0.0, 2.0),
-                    Some(Shader::Solid),
                 ),
                 true,
             ),

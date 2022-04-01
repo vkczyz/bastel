@@ -64,12 +64,8 @@ impl Input {
         let delta = resultant.get_position_delta();
         let pos = (player.sprite.position.0 + delta.0, player.sprite.position.1 + delta.1);
 
-        let mut new_sprite = Sprite::new(
-            pos,
-            player.sprite.size,
-            Some(player.sprite.shader),
-        );
-        new_sprite.texture = player.sprite.texture.clone();
+        let mut new_sprite = player.sprite.clone();
+        new_sprite.change_position(pos);
 
         player.sprite = new_sprite;
     }

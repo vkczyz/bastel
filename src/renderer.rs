@@ -251,7 +251,7 @@ impl Renderer {
 
         let (swapchain, images) = Renderer::get_swapchain(&surface, &device, &queue, &width, &height);
 
-        vulkano::impl_vertex!(Vertex, position, uv);
+        vulkano::impl_vertex!(Vertex, position, color, uv);
 
         let render_pass = vulkano::single_pass_renderpass!(
             device.clone(),
@@ -285,6 +285,7 @@ impl Renderer {
 
         let shaders = [
             shaders::Shader::Solid,
+            shaders::Shader::Invisible,
             shaders::Shader::Rainbow,
             shaders::Shader::Texture,
         ];
