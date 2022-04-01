@@ -1,4 +1,4 @@
-use crate::entity::{Entity, Direction};
+use crate::entity::{Entity, Axis, Edge};
 use crate::input::Input;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
@@ -287,21 +287,43 @@ impl Engine {
             }
 
             if Entity::are_colliding(player, entity) {
-                collision = Some(
-                    Entity::get_collision_direction(player, entity)
-                );
+                collision = Some((
+                    entity.clone(),
+                    Entity::get_collision_intersection(player, entity),
+                ));
             }
         }
 
         let player = &mut self.scene.entities[self.scene.player_index];
 
-        if let Some(c) = collision {
-            match c {
-                Direction::Left | Direction::Right => {
-                    player.physics.acceleration.1 *= -1.0;
-                },
-                Direction::Up | Direction::Down => {
+        if let Some((e, d)) = collision {
+            let x_dist = d[1] - d[0];
+            let y_dist = d[3] - d[2];
+
+            let collision_axis = if x_dist < y_dist { Axis::X } else { Axis::Y };
+            let edge = match collision_axis {
+                Axis::X => {
                     player.physics.acceleration.0 *= -1.0;
+                    if e.sprite.position.0 == d[0] { Edge::Left } else { Edge::Right }
+                },
+                Axis::Y => {
+                    player.physics.acceleration.1 *= -1.0;
+                    if e.sprite.position.1 == d[2] { Edge::Top } else { Edge::Bottom }
+                },
+            };
+
+            match edge {
+                Edge::Left => {
+                    player.sprite.position.0 -= x_dist;
+                },
+                Edge::Right => {
+                    player.sprite.position.0 += x_dist;
+                },
+                Edge::Top => {
+                    player.sprite.position.1 -= y_dist;
+                },
+                Edge::Bottom => {
+                    player.sprite.position.1 += y_dist;
                 },
             }
         }
@@ -315,5 +337,4 @@ impl Engine {
                 ],
         );
     }
-
 }

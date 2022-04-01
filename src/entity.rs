@@ -1,9 +1,7 @@
 use crate::physics::Physics;
 use crate::sprite::Sprite;
 
-use std::cmp::Ordering::Equal;
-
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Entity {
     pub sprite: Sprite,
     pub physics: Physics,
@@ -31,7 +29,9 @@ impl Entity {
         !(a_right_b || a_left_b || a_above_b || a_below_b)
     }
 
-    pub fn get_collision_direction(a: &Entity, b: &Entity) -> Direction {
+    pub fn get_collision_intersection(a: &Entity, b: &Entity) -> [f32; 4] {
+        let (left, right, top, bottom) = (0, 1, 2, 3);
+
         let a_edges = [
             a.sprite.position.0,
             a.sprite.position.0 + a.sprite.size.0,
@@ -45,33 +45,39 @@ impl Entity {
             b.sprite.position.1 + b.sprite.size.1,
         ];
 
-        let distances = a_edges.iter()
-            .zip(b_edges.iter())
-            .map(|(a, b)| (a - b).abs());
+        let intersection_edges = [
+            max_f32(a_edges[left], b_edges[left]),
+            min_f32(a_edges[right], b_edges[right]),
+            max_f32(a_edges[top], b_edges[top]),
+            min_f32(a_edges[bottom], b_edges[bottom]),
+        ];
 
-        println!("{:#?}", distances.clone().collect::<Vec<f32>>());
-
-        let shortest_distance_index = distances
-            .enumerate()
-            .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(Equal))
-            .unwrap().0;
-
-        println!("{:#?}", shortest_distance_index);
-
-        match shortest_distance_index {
-            0 => Direction::Left,
-            1 => Direction::Right,
-            2 => Direction::Up,
-            3 => Direction::Down,
-            _ => panic!("Received unknown cardinal direction"),
-        }
+        intersection_edges
     }
 }
 
-#[derive(Debug)]
-pub enum Direction {
-    Up,
-    Down,
+pub enum Axis {
+    X,
+    Y,
+}
+
+pub enum Edge {
     Left,
     Right,
+    Top,
+    Bottom,
+}
+
+fn min_f32(a: f32, b: f32) -> f32 {
+    match a <= b {
+        true => a,
+        false => b,
+    }
+}
+
+fn max_f32(a: f32, b: f32) -> f32 {
+    match a >= b {
+        true => a,
+        false => b,
+    }
 }

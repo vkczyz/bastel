@@ -6,7 +6,7 @@ use std::io::prelude::*;
 use std::fs::File;
 use std::path::Path;
 
-#[derive(PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Sprite {
     pub position: (f32, f32),
     pub size: (f32, f32),
