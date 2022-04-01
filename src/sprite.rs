@@ -54,7 +54,7 @@ impl Sprite {
         }
     }
 
-    pub fn with_texture(position: (f32, f32), size: (f32, f32), texture_path: &Path) -> io::Result<Self> {
+    pub fn with_texture(position: (f32, f32), size: (f32, f32), texture_path: &Path) -> Self {
         let color = [0.0, 0.0, 0.0];
         let vertices = vec!(
             Vertex {
@@ -80,17 +80,23 @@ impl Sprite {
         );
         let indices = vec!(0, 1, 2, 2, 3, 0);
 
-        let texture = Sprite::read_file(texture_path)?;
+        let (shader, texture) = match Sprite::read_file(texture_path) {
+            Ok(t) => (Shader::Texture, Some(t)),
+            Err(e) => {
+                println!("{}", e);
+                (Shader::Rainbow, None)
+            },
+        };
 
-        Ok(Sprite {
+        Sprite {
             position,
             size,
             vertices,
             indices,
             color,
-            shader: Shader::Texture,
-            texture: Some(texture),
-        })
+            shader,
+            texture,
+        }
     }
 
     pub fn invisible(position: (f32, f32), size: (f32, f32)) -> Self {

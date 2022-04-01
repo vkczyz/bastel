@@ -116,25 +116,11 @@ impl Engine {
                         return;
                     }
 
-                    let pos = (input_handler.cursor[0], input_handler.cursor[1]);
-                    let size = (0.1, 0.1);
-                    let texture_path = Path::new("data/textures/test.png");
-
                     let sprite = Sprite::with_texture(
-                        pos,
-                        size,
-                        texture_path,
+                        (input_handler.cursor[0], input_handler.cursor[1]),
+                        (0.1, 0.1),
+                        Path::new("data/textures/test.png"),
                     );
-                    let sprite = match sprite {
-                        Ok(s) => s,
-                        Err(e) => {
-                            println!("{}", e);
-                            Sprite::rainbow(
-                                pos,
-                                size,
-                            )
-                        },
-                    };
 
                     self.scene.entities.insert(self.scene.player_index, Entity::new(sprite, true));
                     self.scene.player_index += 1;
