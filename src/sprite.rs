@@ -1,9 +1,7 @@
 use crate::shaders::Shader;
 use crate::vertex::Vertex;
 
-use std::io;
-use std::io::prelude::*;
-use std::fs::File;
+use std::fs;
 use std::path::Path;
 
 use miniserde;
@@ -83,7 +81,7 @@ impl Sprite {
         );
         let indices = vec!(0, 1, 2, 2, 3, 0);
 
-        let (shader, texture) = match Sprite::read_file(texture_path) {
+        let (shader, texture) = match fs::read(texture_path) {
             Ok(t) => (Shader::Texture, Some(t)),
             Err(e) => {
                 println!("{}", e);
@@ -276,16 +274,6 @@ impl Sprite {
                 uv: [1.0, 0.0],
             },
         );
-    }
-
-    pub fn read_file(path: &Path) -> io::Result<Vec<u8>> {
-        let path = path.to_str().ok_or(()).unwrap();
-        let mut f = File::open(path)?;
-
-        let mut data = vec![];
-        f.read_to_end(&mut data)?;
-
-        Ok(data)
     }
 
     pub fn get_left_pos(&self) -> f32 {
