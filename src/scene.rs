@@ -1,7 +1,8 @@
 use crate::entity::Entity;
 use crate::physics::Physics;
-use crate::shaders::Shader;
-use crate::sprite::Sprite;
+
+use miniserde;
+use miniserde::json;
 
 pub struct Scene {
     pub physics: Physics,
@@ -14,59 +15,36 @@ impl Scene {
         let mut physics = Physics::new();
         physics.acceleration.1 = 0.001;
 
-        let entities = vec![
-            // Background
-            Entity::new(
-                Sprite::with_color(
-                    (-1.0, -1.0),
-                    (2.0, 2.0),
-                    [0.1, 0.1, 0.1],
-                ),
-                false,
-            ),
-            // Player
-            Entity::new(
-                Sprite::rainbow(
-                    (-0.5, -0.5),
-                    (0.1, 0.1),
-                ),
-                true,
-            ),
-            // Borders
-            Entity::new(
-                Sprite::invisible(
-                    (-1.0, -1.0),
-                    (0.0, 2.0),
-                ),
-                true,
-            ),
-            Entity::new(
-                Sprite::invisible(
-                    (-1.0, -1.0),
-                    (2.0, 0.0),
-                ),
-                true,
-            ),
-            Entity::new(
-                Sprite::invisible(
-                    (-1.0, 1.0),
-                    (2.0, 0.0),
-                ),
-                true,
-            ),
-            Entity::new(
-                Sprite::invisible(
-                    (1.0, -1.0),
-                    (0.0, 2.0),
-                ),
-                true,
-            ),
-        ];
-
         Scene {
             entities,
             player_index,
             physics,
         }
+    }
+
+    #[cfg(feature = "json")]
+    pub fn from_json(data: &json::Value) -> Result<Self, &str> {
+        let data = match data {
+            json::Value::Object(o) => o,
+            _ => return Err("Malformed JSON data: expected object"),
+        };
+
+        Ok(Scene {
+            entities: match data.get("entities") {
+                Some(json::Value::Array(a)) => a.iter()
+                    .map(|e| Entity::from_json(e))
+                    .collect::<Result<Vec<Entity>, &str>>()?,
+                _ => return Err("Malformed JSON data: expected array"),
+            },
+            player_index: match data.get("player_index") {
+                Some(json::Value::Number(n)) => match n {
+                    json::Number::U64(n) => *n as usize,
+                    json::Number::I64(n) => *n as usize,
+                    _ => return Err("Malformed JSON data: expected integer"),
+                }
+                _ => return Err("Malformed JSON data: expected number"),
+            },
+            physics: Physics::new(),
+        })
     }
 }

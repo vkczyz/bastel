@@ -6,6 +6,9 @@ use std::io::prelude::*;
 use std::fs::File;
 use std::path::Path;
 
+use miniserde;
+use miniserde::json;
+
 #[derive(Clone, PartialEq)]
 pub struct Sprite {
     pub position: (f32, f32),
@@ -168,6 +171,84 @@ impl Sprite {
             color: [0.0, 0.0, 0.0],
             shader: Shader::Rainbow,
             texture: None,
+        }
+    }
+
+    #[cfg(feature = "json")]
+    pub fn from_json(data: &json::Value) -> Result<Self, &str> {
+        let data = match data {
+            json::Value::Object(o) => o,
+            _ => return Err("Malformed JSON data: expected object"),
+        };
+        
+        let position = match data.get("position") {
+            Some(json::Value::Array(a)) => a.iter()
+                .map(|n| match n {
+                    json::Value::Number(json::Number::F64(i)) => Ok(*i as f32),
+                    _ => Err("Malformed JSON data: expected array"),
+                })
+                .collect::<Result<Vec<f32>, &str>>(),
+            _ => return Err("Malformed JSON data: expected array"),
+        }?;
+
+        let size = match data.get("size") {
+            Some(json::Value::Array(a)) => a.iter()
+                .map(|n| match n {
+                    json::Value::Number(json::Number::F64(i)) => Ok(*i as f32),
+                    _ => Err("Malformed JSON data: expected number"),
+                })
+                .collect::<Result<Vec<f32>, &str>>(),
+            _ => return Err("Malformed JSON data: expected array"),
+        }?;
+
+        match data.get("shader") {
+            Some(json::Value::String(s)) => {
+                match s.as_str() {
+                    "solid" => {
+                        let color = match data.get("color") {
+                            Some(json::Value::Array(a)) => a.iter()
+                                .map(|n| match n {
+                                    json::Value::Number(json::Number::F64(i)) => Ok(*i as f32),
+                                    _ => Err("Malformed JSON data: expected number"),
+                                })
+                                .collect::<Result<Vec<f32>, &str>>(),
+                            _ => Err("Malformed JSON data: expected array"),
+                        }?;
+
+                        Ok(Sprite::with_color(
+                            (position[0], position[1]),
+                            (size[0], size[1]),
+                            [color[0], color[1], color[2]],
+                        ))
+                    },
+                    "invisible" => {
+                        Ok(Sprite::invisible(
+                            (position[0], position[1]),
+                            (size[0], size[1]),
+                        ))
+                    },
+                    "rainbow" => {
+                        Ok(Sprite::rainbow(
+                            (position[0], position[1]),
+                            (size[0], size[1]),
+                        ))
+                    },
+                    "texture" => {
+                        let texture = match data.get("texture") {
+                            Some(json::Value::String(s)) => s,
+                            _ => return Err("Malformed JSON data: expected string"),
+                        };
+
+                        Ok(Sprite::with_texture(
+                            (position[0], position[1]),
+                            (size[0], size[1]),
+                            Path::new(texture),
+                        ))
+                    },
+                    _ => return Err("Malformed JSON data: unknown shader type"),
+                }
+            },
+            _ => Err("Malformed JSON data: expected valid shader")
         }
     }
 

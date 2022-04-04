@@ -1,6 +1,8 @@
 use crate::physics::Physics;
 use crate::sprite::Sprite;
 
+use miniserde::json;
+
 #[derive(Clone, PartialEq)]
 pub struct Entity {
     pub sprite: Sprite,
@@ -15,6 +17,26 @@ impl Entity {
             physics: Physics::new(),
             collideable,
         }
+    }
+
+    #[cfg(feature = "json")]
+    pub fn from_json(data: &json::Value) -> Result<Self, &str> {
+        let data = match data {
+            json::Value::Object(o) => o,
+            _ => return Err("Malformed JSON data: expected object"),
+        };
+
+        Ok(Entity {
+            sprite: match data.get("sprite") {
+                Some(s) => Sprite::from_json(s)?,
+                _ => return Err("Malformed JSON data: expected object"),
+            },
+            collideable: match data.get("collideable") {
+                Some(json::Value::Bool(b)) => *b,
+                _ => return Err("Malformed JSON data: expected bool")
+            },
+            physics: Physics::new(),
+        })
     }
 
     pub fn are_colliding(a: &Entity, b: &Entity) -> bool {
