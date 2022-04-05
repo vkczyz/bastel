@@ -1,6 +1,8 @@
 use crate::entity::Entity;
 use crate::physics::Physics;
 
+use std::path::PathBuf;
+
 use miniserde;
 use miniserde::json;
 
@@ -8,6 +10,7 @@ pub struct Scene {
     pub physics: Physics,
     pub entities: Vec<Entity>,
     pub player_index: usize,
+    pub bgm: Option<PathBuf>,
 }
 
 impl Scene {
@@ -19,6 +22,7 @@ impl Scene {
             entities,
             player_index,
             physics,
+            bgm: None,
         }
     }
 
@@ -45,6 +49,10 @@ impl Scene {
                 _ => return Err("Malformed JSON data: expected number"),
             },
             physics: Physics::new(),
+            bgm: match data.get("bgm") {
+                Some(json::Value::String(s)) => Some(PathBuf::from(s)),
+                _ => None,
+            }
         })
     }
 }

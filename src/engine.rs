@@ -1,5 +1,6 @@
 use crate::entity::{Entity, Axis, Edge};
 use crate::input::Input;
+use crate::audio::Audio;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
 use crate::shaders::Shader;
@@ -25,13 +26,13 @@ pub struct Engine {
     pub fps: u64,
     pub renderer: Renderer,
     pub input: Input,
+    pub audio: Audio,
     pub scene: Scene,
 }
 
 impl Engine {
     pub fn new(title: &str, width: u32, height: u32) -> (Self, EventLoop<()>) {
         let (renderer, event_loop) = Renderer::init(title, width, height);
-        let input = Input::new();
         let fps = 60;
 
         (Engine {
@@ -41,7 +42,8 @@ impl Engine {
             resolution: (width, height),
             fps,
             renderer,
-            input,
+            input: Input::new(),
+            audio: Audio::new(),
             scene: Scene::new(
                 vec![],
                 1,
@@ -59,6 +61,11 @@ impl Engine {
         let ratio = self.width / self.height;
 
         let mut input_handler = Input::new();
+
+        match self.scene.bgm.as_ref() {
+            Some(p) => self.audio.play_bgm(p),
+            None => {},
+        }
 
         event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::WaitUntil(

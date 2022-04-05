@@ -7,6 +7,7 @@ mod renderer;
 mod shaders;
 mod vertex;
 mod input;
+mod audio;
 
 use engine::Engine;
 use scene::Scene;

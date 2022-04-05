@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 png = "0.17"
+rodio = "0.15"
 vulkano = "0.28"
 vulkano-shaders = "0.28"
 vulkano-win = "0.28"
