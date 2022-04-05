@@ -3,9 +3,10 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
-use rodio::{Decoder, OutputStream, Sink, OutputStreamHandle};
+use rodio::{Decoder, OutputStream, Sink};
 use rodio::source::Source;
 
+#[allow(dead_code)]
 pub struct Audio {
     pub bgm: Sink,
     bgm_stream: OutputStream,

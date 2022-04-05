@@ -1,5 +1,5 @@
-use crate::{entity::Entity, physics::Physics};
-use crate::sprite::Sprite;
+use crate::entity::Entity;
+use crate::physics::Physics;
 
 use winit::event::{ElementState, KeyboardInput};
 
