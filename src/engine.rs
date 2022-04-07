@@ -58,8 +58,6 @@ impl Engine {
         let mut recreate_swapchain = false;
         let mut previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
 
-        let ratio = self.width / self.height;
-
         let mut input_handler = Input::new();
 
         match self.scene.bgm.as_ref() {
@@ -85,17 +83,30 @@ impl Engine {
                     self.width = size.width;
                     self.height = size.height;
                     
-                    let x = self.width;
-                    let y = self.height;
+                    let x = self.width as f32;
+                    let y = self.height as f32;
 
-                    if x > y {
-                        let vx = y*ratio;
-                        self.renderer.viewport.dimensions = [vx as f32, y as f32];
-                        self.renderer.viewport.origin = [((x / 2) - (vx / 2)) as f32, 0.0];
+                    let res_ratio = self.resolution.0 as f32 / self.resolution.1 as f32;
+                    let win_ratio = self.width as f32 / self.height as f32;
+
+                    if win_ratio > res_ratio {
+                        let vx = y * res_ratio;
+                        let vy = y;
+
+                        self.renderer.viewport.dimensions = [vx, vy];
+                        self.renderer.viewport.origin = [
+                            (x / 2.0) - (vx / 2.0),
+                            0.0,
+                        ];
                     } else {
-                        let vy = x/ratio;
-                        self.renderer.viewport.dimensions = [x as f32, vy as f32];
-                        self.renderer.viewport.origin = [0.0, ((y / 2) - (vy / 2)) as f32];
+                        let vx = x;
+                        let vy = x / res_ratio;
+
+                        self.renderer.viewport.dimensions = [vx, vy];
+                        self.renderer.viewport.origin = [
+                            0.0,
+                            (y / 2.0) - (vy / 2.0),
+                        ];
                     }
 
                     self.renderer.recreate_pipelines().unwrap();
