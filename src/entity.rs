@@ -14,7 +14,7 @@ impl Entity {
     pub fn new(sprite: Sprite, collideable: bool) -> Self {
         Entity {
             sprite,
-            physics: Physics::new(),
+            physics: Physics::new(1.0),
             collideable,
         }
     }
@@ -35,7 +35,7 @@ impl Entity {
                 Some(json::Value::Bool(b)) => *b,
                 _ => return Err("Malformed JSON data: expected bool")
             },
-            physics: Physics::new(),
+            physics: Physics::new(1.0),
         })
     }
 

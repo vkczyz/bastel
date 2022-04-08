@@ -56,13 +56,18 @@ impl Input {
     pub fn handle_movement(&self, player: &mut Entity, global: &Physics, factor: &[f32]) {
         let local = &mut player.physics;
 
-        local.acceleration.0 += factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32));
-        local.acceleration.1 += factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32));
+        let mut force = (
+            factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32)),
+            factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32)),
+        );
+        force.1 += factor[1];
 
-        let resultant = Physics::resultant(local, global);
+        local.apply_force(force);
+        local.update();
 
-        let delta = resultant.get_position_delta();
-        let pos = (player.sprite.position.0 + delta.0, player.sprite.position.1 + delta.1);
+        let displ = local.get_displacement();
+        let pos = (player.sprite.position.0 + displ.0, player.sprite.position.1 + displ.1);
+        println!("({}, {})", pos.0, pos.1);
 
         let mut new_sprite = player.sprite.clone();
         new_sprite.change_position(pos);

@@ -15,8 +15,7 @@ pub struct Scene {
 
 impl Scene {
     pub fn new(entities: Vec<Entity>, player_index: usize) -> Self {
-        let mut physics = Physics::new();
-        physics.acceleration.1 = 0.001;
+        let physics = Physics::new(0.0);
 
         Scene {
             entities,
@@ -48,7 +47,7 @@ impl Scene {
                 }
                 _ => return Err("Malformed JSON data: expected number"),
             },
-            physics: Physics::new(),
+            physics: Physics::new(0.0),
             bgm: match data.get("bgm") {
                 Some(json::Value::String(s)) => Some(PathBuf::from(s)),
                 _ => None,

@@ -1,39 +1,41 @@
 #[derive(Clone, PartialEq)]
 pub struct Physics {
-    pub velocity: (f32, f32),
+    pub mass: f32,
     pub acceleration: (f32, f32),
+    velocity: (f32, f32),
 }
 
 impl Physics {
-    pub fn new() -> Self {
+    pub fn new(mass: f32) -> Self {
         Physics {
-            velocity: (0.0, 0.0),
+            mass,
             acceleration: (0.0, 0.0),
+            velocity: (0.0, 0.0),
         }
     }
 
-    pub fn resultant(a: &Physics, b: &Physics) -> Self {
-        Physics {
-            velocity: a.velocity,
-            acceleration: (
-                a.acceleration.0 + b.acceleration.0,
-                a.acceleration.1 + b.acceleration.1,
-            ),
-        }
+    pub fn update(&mut self) {
+        self.velocity.0 += self.acceleration.0;
+        self.velocity.1 += self.acceleration.1;
     }
 
-    pub fn get_position_delta(&self) -> (f32, f32) {
-        let mass = 1.0;
-        let velocity = (
-            self.velocity.0 + self.acceleration.0 * mass,
-            self.velocity.1 + self.acceleration.1 * mass,
-        );
+    pub fn invert_x(&mut self) {
+        self.acceleration.0 *= -1.0;
+        self.velocity.0 *= -1.0;
+    }
 
-        let delta = (
-            velocity.0 * 1.0,
-            velocity.1 * 1.0,
-        );
+    pub fn invert_y(&mut self) {
+        self.acceleration.1 *= -1.0;
+        self.velocity.1 *= -1.0;
+    }
 
-        delta
+    pub fn apply_force(&mut self, force: (f32, f32)) {
+        self.acceleration.0 = force.0 / self.mass;
+        self.acceleration.1 = force.1 / self.mass;
+    }
+
+    pub fn get_displacement(&self) -> (f32, f32) {
+        let displacement = (self.velocity.0, self.velocity.1);
+        displacement
     }
 }
