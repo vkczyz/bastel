@@ -20,9 +20,8 @@ use winit::event_loop::{ControlFlow, EventLoop};
 
 pub struct Engine {
     pub title: String,
-    pub width: u32,
-    pub height: u32,
-    pub resolution: (u32, u32),
+    pub window_size: (u32, u32),
+    pub view_size: (u32, u32),
     pub fps: u64,
     pub renderer: Renderer,
     pub input: Input,
@@ -37,9 +36,8 @@ impl Engine {
 
         (Engine {
             title: String::from(title),
-            width,
-            height,
-            resolution: (width, height),
+            window_size: (width, height),
+            view_size: (width, height),
             fps,
             renderer,
             input: Input::new(),
@@ -80,14 +78,14 @@ impl Engine {
                     event: WindowEvent::Resized(size),
                     ..
                 } => {
-                    self.width = size.width;
-                    self.height = size.height;
+                    self.window_size.0 = size.width;
+                    self.window_size.1 = size.height;
                     
-                    let x = self.width as f32;
-                    let y = self.height as f32;
+                    let x = self.window_size.0 as f32;
+                    let y = self.window_size.1 as f32;
 
-                    let res_ratio = self.resolution.0 as f32 / self.resolution.1 as f32;
-                    let win_ratio = self.width as f32 / self.height as f32;
+                    let res_ratio = self.view_size.0 as f32 / self.view_size.1 as f32;
+                    let win_ratio = self.window_size.0 as f32 / self.window_size.1 as f32;
 
                     if win_ratio > res_ratio {
                         let vx = y * res_ratio;
@@ -284,10 +282,10 @@ impl Engine {
     }
 
     fn update_position(&mut self, input: &Input) {
-        let units = [
-            1.0 / self.resolution.0 as f32,
-            1.0 / self.resolution.1 as f32,
-        ];
+        let units = (
+            1.0 / self.view_size.0 as f32,
+            1.0 / self.view_size.1 as f32,
+        );
 
         let player = &self.scene.entities[self.scene.player_index];
         let mut collision = None;
@@ -345,10 +343,10 @@ impl Engine {
 
         input.handle_movement(
             player,
-            &self.scene.physics,
+            &self.scene.force,
             &[
-                units[0] * 0.2,
-                units[1] * 0.2,
+                units.0 * 0.2,
+                units.1 * 0.2,
                 ],
         );
     }

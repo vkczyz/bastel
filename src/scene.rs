@@ -1,5 +1,4 @@
 use crate::entity::Entity;
-use crate::physics::Physics;
 
 use std::path::PathBuf;
 
@@ -7,20 +6,27 @@ use miniserde;
 use miniserde::json;
 
 pub struct Scene {
-    pub physics: Physics,
     pub entities: Vec<Entity>,
     pub player_index: usize,
+    pub force: (f32, f32),
     pub bgm: Option<PathBuf>,
 }
 
 impl Scene {
     pub fn new(entities: Vec<Entity>, player_index: usize) -> Self {
-        let physics = Physics::new(0.0);
-
         Scene {
             entities,
             player_index,
-            physics,
+            force: (0.0, 2.0),
+            bgm: None,
+        }
+    }
+
+    pub fn with_force(entities: Vec<Entity>, player_index: usize, force: (f32, f32)) -> Self {
+        Scene {
+            entities,
+            player_index,
+            force,
             bgm: None,
         }
     }
@@ -47,7 +53,7 @@ impl Scene {
                 }
                 _ => return Err("Malformed JSON data: expected number"),
             },
-            physics: Physics::new(0.0),
+            force: (0.0, 2.0),
             bgm: match data.get("bgm") {
                 Some(json::Value::String(s)) => Some(PathBuf::from(s)),
                 _ => None,
