@@ -167,7 +167,8 @@ impl Engine {
                 }
 
                 Event::RedrawEventsCleared => {
-                    self.update_position(&input_handler);
+                    let entity_index = self.scene.player_index;
+                    self.update_position(&input_handler, entity_index);
 
                     previous_frame_end.as_mut().unwrap().cleanup_finished();
 
@@ -281,13 +282,13 @@ impl Engine {
         });
     }
 
-    fn update_position(&mut self, input: &Input) {
+    fn update_position(&mut self, input: &Input, entity_index: usize) {
         let units = (
             1.0 / self.view_size.0 as f32,
             1.0 / self.view_size.1 as f32,
         );
 
-        let player = &self.scene.entities[self.scene.player_index];
+        let player = &self.scene.entities[entity_index];
         let mut collision = None;
 
         // Collision check
@@ -307,7 +308,7 @@ impl Engine {
             }
         }
 
-        let player = &mut self.scene.entities[self.scene.player_index];
+        let player = &mut self.scene.entities[entity_index];
 
         if let Some((e, d)) = collision {
             let x_dist = d[1] - d[0];
@@ -341,13 +342,28 @@ impl Engine {
             }
         }
 
+        // Apply scene forces
+        let global = self.scene.force;
+        player.physics.apply_force(global);
+
         input.handle_movement(
             player,
-            &self.scene.force,
-            &[
+            (
                 units.0 * 0.2,
                 units.1 * 0.2,
-                ],
+            ),
         );
+
+        player.physics.update();
+
+        let displ = player.physics.get_displacement();
+        let pos = (player.sprite.position.0 + displ.0, player.sprite.position.1 + displ.1);
+
+        let mut new_sprite = player.sprite.clone();
+        new_sprite.change_position(pos);
+
+        player.sprite = new_sprite;
+
+        player.physics.reset_acceleration();
     }
 }

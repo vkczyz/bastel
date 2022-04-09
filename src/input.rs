@@ -52,27 +52,13 @@ impl Input {
         }
     }
 
-    pub fn handle_movement(&self, player: &mut Entity, global: &(f32, f32), factor: &[f32]) {
-        let local = &mut player.physics;
-
-        let mut force = (
-            factor[0] * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32)),
-            factor[1] * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32)),
+    pub fn handle_movement(&self, player: &mut Entity, strength: (f32, f32)) {
+        let force = (
+            strength.0 * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32)),
+            strength.1 * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32)),
         );
-        // Apply scene forces
-        force.0 += global.0;
-        force.1 += global.1;
 
-        local.apply_force(force);
-        local.update();
-
-        let displ = local.get_displacement();
-        let pos = (player.sprite.position.0 + displ.0, player.sprite.position.1 + displ.1);
-
-        let mut new_sprite = player.sprite.clone();
-        new_sprite.change_position(pos);
-
-        player.sprite = new_sprite;
+        player.physics.apply_force(force);
     }
 
     pub fn is_valid_cursor_position(&self) -> bool {

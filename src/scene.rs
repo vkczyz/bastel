@@ -17,7 +17,7 @@ impl Scene {
         Scene {
             entities,
             player_index,
-            force: (0.0, 2.0),
+            force: (0.0, 0.000025),
             bgm: None,
         }
     }
@@ -53,7 +53,7 @@ impl Scene {
                 }
                 _ => return Err("Malformed JSON data: expected number"),
             },
-            force: (0.0, 2.0),
+            force: (0.0, 0.000025),
             bgm: match data.get("bgm") {
                 Some(json::Value::String(s)) => Some(PathBuf::from(s)),
                 _ => None,
