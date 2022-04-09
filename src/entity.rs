@@ -19,6 +19,14 @@ impl Entity {
         }
     }
 
+    pub fn with_mass(sprite: Sprite, collideable: bool, mass: f32) -> Self {
+        Entity {
+            sprite,
+            physics: Physics::new(mass),
+            collideable,
+        }
+    }
+
     #[cfg(feature = "json")]
     pub fn from_json(data: &json::Value) -> Result<Self, &str> {
         let data = match data {
@@ -35,7 +43,10 @@ impl Entity {
                 Some(json::Value::Bool(b)) => *b,
                 _ => return Err("Malformed JSON data: expected bool")
             },
-            physics: Physics::new(1.0),
+            physics: match data.get("mass") {
+                Some(json::Value::Number(json::Number::F64(n))) => Physics::new(*n as f32),
+                _ => Physics::new(1.0)
+            },
         })
     }
 

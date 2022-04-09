@@ -183,7 +183,7 @@ impl Sprite {
             Some(json::Value::Array(a)) => a.iter()
                 .map(|n| match n {
                     json::Value::Number(json::Number::F64(i)) => Ok(*i as f32),
-                    _ => Err("Malformed JSON data: expected array"),
+                    _ => Err("Malformed JSON data: expected float"),
                 })
                 .collect::<Result<Vec<f32>, &str>>(),
             _ => return Err("Malformed JSON data: expected array"),

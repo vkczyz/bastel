@@ -32,7 +32,6 @@ impl Physics {
     pub fn apply_force(&mut self, force: (f32, f32)) {
         self.acceleration.0 += force.0 / self.mass;
         self.acceleration.1 += force.1 / self.mass;
-        println!("({}, {})", force.0, force.1);
     }
 
     pub fn get_displacement(&self) -> (f32, f32) {

@@ -17,7 +17,7 @@ impl Scene {
         Scene {
             entities,
             player_index,
-            force: (0.0, 0.000025),
+            force: (0.0, 0.0),
             bgm: None,
         }
     }
@@ -38,6 +38,17 @@ impl Scene {
             _ => return Err("Malformed JSON data: expected object"),
         };
 
+        let force = match data.get("force") {
+            Some(json::Value::Array(a)) => a.iter()
+                .map(|n| match n {
+                    json::Value::Number(json::Number::F64(i)) => Ok(*i as f32),
+                    _ => Err("Malformed JSON data: expected float"),
+                })
+                .collect::<Result<Vec<f32>, &str>>(),
+            _ => Ok(vec![0.0, 0.0]),
+        }?;
+        let force = (force[0], force[1]);
+
         Ok(Scene {
             entities: match data.get("entities") {
                 Some(json::Value::Array(a)) => a.iter()
@@ -53,11 +64,11 @@ impl Scene {
                 }
                 _ => return Err("Malformed JSON data: expected number"),
             },
-            force: (0.0, 0.000025),
+            force,
             bgm: match data.get("bgm") {
                 Some(json::Value::String(s)) => Some(PathBuf::from(s)),
                 _ => None,
-            }
+            },
         })
     }
 }
