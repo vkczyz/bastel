@@ -15,6 +15,7 @@ impl Physics {
     }
 
     pub fn update(&mut self) {
+        // Calculate velocity
         self.velocity.0 += self.acceleration.0;
         self.velocity.1 += self.acceleration.1;
     }
@@ -29,6 +30,26 @@ impl Physics {
         self.velocity.1 *= -1.0;
     }
 
+    pub fn friction_x(&mut self) {
+        let v = self.velocity.0;
+
+        if v < 0.0 {
+            self.apply_force((0.0001, 0.0));
+        } else if v > 0.0 {
+            self.apply_force((-0.0001, 0.0));
+        }
+    }
+
+    pub fn friction_y(&mut self) {
+        let v = self.velocity.1;
+
+        if v < 0.0 {
+            self.apply_force((0.0, 0.0001));
+        } else if v > 0.0 {
+            self.apply_force((0.0, -0.0001));
+        }
+    }
+
     pub fn apply_force(&mut self, force: (f32, f32)) {
         self.acceleration.0 += force.0 / self.mass;
         self.acceleration.1 += force.1 / self.mass;
@@ -39,7 +60,7 @@ impl Physics {
         displacement
     }
 
-    pub fn reset_acceleration(&mut self) {
+    pub fn reset(&mut self) {
         self.acceleration = (0.0, 0.0);
     }
 }

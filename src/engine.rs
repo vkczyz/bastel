@@ -134,7 +134,7 @@ impl Engine {
 
                     let sprite = Sprite::with_texture(
                         (input_handler.cursor[0], input_handler.cursor[1]),
-                        (0.1, 0.1),
+                        (0.08, 0.1067),
                         Path::new("data/textures/test.png"),
                     );
 
@@ -318,10 +318,12 @@ impl Engine {
             let edge = match collision_axis {
                 Axis::X => {
                     player.physics.invert_x();
+                    player.physics.friction_y();
                     if e.sprite.position.0 == d[0] { Edge::Left } else { Edge::Right }
                 },
                 Axis::Y => {
                     player.physics.invert_y();
+                    player.physics.friction_x();
                     if e.sprite.position.1 == d[2] { Edge::Top } else { Edge::Bottom }
                 },
             };
@@ -350,8 +352,8 @@ impl Engine {
         input.handle_movement(
             player,
             (
-                units.0 * 0.2,
-                units.1 * 0.2,
+                units.0,
+                units.1 * 0.5,
             ),
         );
 
@@ -361,6 +363,6 @@ impl Engine {
         let pos = (player.sprite.position.0 + displ.0, player.sprite.position.1 + displ.1);
         player.sprite.change_position(pos);
 
-        player.physics.reset_acceleration();
+        player.physics.reset();
     }
 }
