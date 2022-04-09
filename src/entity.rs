@@ -14,15 +14,15 @@ impl Entity {
     pub fn new(sprite: Sprite, collideable: bool) -> Self {
         Entity {
             sprite,
-            physics: Physics::new(1.0),
+            physics: Physics::default(),
             collideable,
         }
     }
 
-    pub fn with_mass(sprite: Sprite, collideable: bool, mass: f32) -> Self {
+    pub fn with_physics(sprite: Sprite, collideable: bool, physics: Physics) -> Self {
         Entity {
             sprite,
-            physics: Physics::new(mass),
+            physics: physics,
             collideable,
         }
     }
@@ -34,6 +34,21 @@ impl Entity {
             _ => return Err("Malformed JSON data: expected object"),
         };
 
+        let mass = match data.get("mass") {
+            Some(json::Value::Number(json::Number::F64(n))) => *n as f32,
+            _ => 1.0,
+        };
+
+        let friction = match data.get("friction") {
+            Some(json::Value::Number(json::Number::F64(n))) => *n as f32,
+            _ => 1.0,
+        };
+
+        let bounciness = match data.get("bounciness") {
+            Some(json::Value::Number(json::Number::F64(n))) => *n as f32,
+            _ => 1.0,
+        };
+
         Ok(Entity {
             sprite: match data.get("sprite") {
                 Some(s) => Sprite::from_json(s)?,
@@ -43,10 +58,7 @@ impl Entity {
                 Some(json::Value::Bool(b)) => *b,
                 _ => return Err("Malformed JSON data: expected bool")
             },
-            physics: match data.get("mass") {
-                Some(json::Value::Number(json::Number::F64(n))) => Physics::new(*n as f32),
-                _ => Physics::new(1.0)
-            },
+            physics: Physics::new(mass, friction, bounciness),
         })
     }
 

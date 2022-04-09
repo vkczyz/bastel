@@ -332,12 +332,12 @@ impl Engine {
             let collision_axis = if x_dist < y_dist { Axis::X } else { Axis::Y };
             let edge = match collision_axis {
                 Axis::X => {
-                    player.physics.invert_x();
+                    player.physics.bounce_x();
                     player.physics.friction_y();
                     if e.sprite.position.0 == d[0] { Edge::Left } else { Edge::Right }
                 },
                 Axis::Y => {
-                    player.physics.invert_y();
+                    player.physics.bounce_y();
                     player.physics.friction_x();
                     if e.sprite.position.1 == d[2] { Edge::Top } else { Edge::Bottom }
                 },

@@ -4,15 +4,27 @@ pub struct Physics {
     pub acceleration: (f32, f32),
     velocity: (f32, f32),
     friction: f32,
+    bounciness: f32,
 }
 
 impl Physics {
-    pub fn new(mass: f32) -> Self {
+    pub fn new(mass: f32, friction: f32, bounciness: f32) -> Self {
         Physics {
             mass,
             acceleration: (0.0, 0.0),
             velocity: (0.0, 0.0),
-            friction: 0.2,
+            friction,
+            bounciness,
+        }
+    }
+
+    pub fn default() -> Self {
+        Physics {
+            mass: 1.0,
+            acceleration: (0.0, 0.0),
+            velocity: (0.0, 0.0),
+            friction: 0.5,
+            bounciness: 1.0,
         }
     }
 
@@ -21,16 +33,14 @@ impl Physics {
         self.velocity.1 += self.acceleration.1;
     }
 
-    pub fn invert_x(&mut self) {
-        let f = 1.0 - self.friction;
-        self.acceleration.0 *= -f;
-        self.velocity.0 *= -f;
+    pub fn bounce_x(&mut self) {
+        self.acceleration.0 *= -self.bounciness;
+        self.velocity.0 *= -self.bounciness;
     }
 
-    pub fn invert_y(&mut self) {
-        let f = 1.0 - self.friction;
-        self.acceleration.1 *= -f;
-        self.velocity.1 *= -f;
+    pub fn bounce_y(&mut self) {
+        self.acceleration.1 *= -self.bounciness;
+        self.velocity.1 *= -self.bounciness;
     }
 
     pub fn friction_x(&mut self) {
