@@ -53,10 +53,11 @@ impl Input {
     }
 
     pub fn handle_movement(&self, player: &mut Entity, strength: (f32, f32)) {
-        let force = (
-            strength.0 * (0.0 + (self.right as i32 as f32) - (self.left as i32 as f32)),
-            strength.1 * (0.0 + (self.down as i32 as f32) - (self.up as i32 as f32)),
-        );
+        let force = get_vector_normalised((
+            0.0 + (self.right as i32 as f32) - (self.left as i32 as f32),
+            0.0 + (self.down as i32 as f32) - (self.up as i32 as f32),
+        ));
+        let force = (force.0 * strength.0, force.1 * strength.1);
 
         player.physics.apply_force(force);
     }
@@ -65,5 +66,20 @@ impl Input {
         if self.cursor[0] < -1.0 || self.cursor[0] > 1.0 { return false; }
         if self.cursor[1] < -1.0 || self.cursor[1] > 1.0 { return false; }
         true
+    }
+}
+
+fn get_vector_magnitude(v: (f32, f32)) -> f32 {
+    ((v.0 * v.0) + (v.1 * v.1)).sqrt()
+}
+
+fn get_vector_normalised(v: (f32, f32)) -> (f32, f32) {
+    let mag = get_vector_magnitude(v);
+    match mag == 0.0 {
+        true => (0.0, 0.0),
+        false => (
+            v.0 / mag,
+            v.1 / mag,
+        ),
     }
 }
