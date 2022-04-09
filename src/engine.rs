@@ -291,6 +291,8 @@ impl Engine {
             ),
         );
 
+        player.contact = false;
+
         // Collision check
         let player = &self.scene.entities[entity_index];
         let mut collision = None;
@@ -341,6 +343,7 @@ impl Engine {
                 },
                 Edge::Top => {
                     player.sprite.position.1 -= y_dist;
+                    player.contact = true;
                 },
                 Edge::Bottom => {
                     player.sprite.position.1 += y_dist;

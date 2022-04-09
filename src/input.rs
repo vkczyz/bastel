@@ -55,11 +55,14 @@ impl Input {
     pub fn handle_movement(&self, player: &mut Entity, strength: (f32, f32)) {
         let force = get_vector_normalised((
             0.0 + (self.right as i32 as f32) - (self.left as i32 as f32),
-            0.0 + (self.down as i32 as f32) - (self.up as i32 as f32),
+            0.0 + (self.down as i32 as f32),
         ));
         let force = (force.0 * strength.0, force.1 * strength.1);
-
         player.physics.apply_force(force);
+
+        if self.up && player.contact {
+            player.physics.velocity.1 -= strength.1 * 16.0;
+        }
     }
 
     pub fn is_valid_cursor_position(&self) -> bool {
