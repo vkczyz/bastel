@@ -4,9 +4,7 @@ use crate::audio::Audio;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
 use crate::shaders::Shader;
-use crate::sprite::Sprite;
 
-use std::path::Path;
 use std::time::{Duration, Instant};
 
 use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
@@ -128,18 +126,9 @@ impl Engine {
                     },
                     ..
                 } => {
-                    if !input_handler.is_valid_cursor_position() {
-                        return;
+                    if input_handler.is_valid_cursor_position() {
+                        println!("({}, {})", input_handler.cursor[0], input_handler.cursor[1]);
                     }
-
-                    let sprite = Sprite::with_texture(
-                        (input_handler.cursor[0], input_handler.cursor[1]),
-                        (0.08, 0.1067),
-                        Path::new("data/textures/test.png"),
-                    );
-
-                    self.scene.entities.insert(self.scene.player_index, Entity::new(sprite, true));
-                    self.scene.player_index += 1;
                 },
 
                 Event::WindowEvent {
