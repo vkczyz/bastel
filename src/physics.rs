@@ -44,12 +44,12 @@ impl Physics {
     }
 
     pub fn friction_x(&mut self) {
-        let f = self.velocity.0 * self.friction;
+        let f = self.mass * self.velocity.0 * self.friction;
         self.apply_force((-f, 0.0));
     }
 
     pub fn friction_y(&mut self) {
-        let f = self.velocity.1 * self.friction;
+        let f = self.mass * self.velocity.1 * self.friction;
         self.apply_force((0.0, -f));
     }
 
