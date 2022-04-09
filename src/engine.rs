@@ -288,10 +288,24 @@ impl Engine {
             1.0 / self.view_size.1 as f32,
         );
 
+        // Apply scene forces
+        let player = &mut self.scene.entities[entity_index];
+        let global = self.scene.force;
+        player.physics.apply_force(global);
+
+        // Apply input forces
+        input.handle_movement(
+            player,
+            (
+                units.0,
+                units.1,
+            ),
+        );
+
+        // Collision check
         let player = &self.scene.entities[entity_index];
         let mut collision = None;
 
-        // Collision check
         for entity in self.scene.entities.iter() {
             if !entity.collideable {
                 continue;
@@ -308,6 +322,7 @@ impl Engine {
             }
         }
 
+        // Collision handling
         let player = &mut self.scene.entities[entity_index];
 
         if let Some((e, d)) = collision {
@@ -343,19 +358,6 @@ impl Engine {
                 },
             }
         }
-
-        // Apply scene forces
-        let global = self.scene.force;
-        player.physics.apply_force(global);
-
-        // Apply input forces
-        input.handle_movement(
-            player,
-            (
-                units.0,
-                units.1 * 0.5,
-            ),
-        );
 
         player.physics.update();
 
