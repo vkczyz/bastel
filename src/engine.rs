@@ -346,6 +346,7 @@ impl Engine {
         let global = self.scene.force;
         player.physics.apply_force(global);
 
+        // Apply input forces
         input.handle_movement(
             player,
             (
@@ -358,11 +359,7 @@ impl Engine {
 
         let displ = player.physics.get_displacement();
         let pos = (player.sprite.position.0 + displ.0, player.sprite.position.1 + displ.1);
-
-        let mut new_sprite = player.sprite.clone();
-        new_sprite.change_position(pos);
-
-        player.sprite = new_sprite;
+        player.sprite.change_position(pos);
 
         player.physics.reset_acceleration();
     }
