@@ -291,7 +291,19 @@ impl Engine {
             ),
         );
 
-        player.contact = false;
+        // Apply jump (if requested)
+        if input.up {
+            let curve = 1.0;
+            let force = (
+                0.0,
+                units.1 * -12.0 / (curve + player.airtime as f32),
+            );
+            if force.1 < 1.0 {
+                player.physics.apply_force(force);
+            }
+        }
+
+        player.airtime += 1;
 
         // Collision check
         let player = &self.scene.entities[entity_index];
@@ -343,7 +355,9 @@ impl Engine {
                 },
                 Edge::Top => {
                     player.sprite.position.1 -= y_dist;
-                    player.contact = true;
+                    if player.physics.velocity.1.abs() < global.1.abs() {
+                        player.airtime = 0;
+                    }
                 },
                 Edge::Bottom => {
                     player.sprite.position.1 += y_dist;

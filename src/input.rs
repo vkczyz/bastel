@@ -4,10 +4,10 @@ use winit::event::{ElementState, KeyboardInput};
 
 pub struct Input {
     pub cursor: [f32; 2],
-    up: bool,
-    down: bool,
-    left: bool,
-    right: bool,
+    pub up: bool,
+    pub down: bool,
+    pub left: bool,
+    pub right: bool,
 }
 
 impl Input {
@@ -59,10 +59,6 @@ impl Input {
         ));
         let force = (force.0 * strength.0, force.1 * strength.1);
         player.physics.apply_force(force);
-
-        if self.up && player.contact {
-            player.physics.velocity.1 -= strength.1 * 16.0;
-        }
     }
 
     pub fn is_valid_cursor_position(&self) -> bool {

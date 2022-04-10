@@ -8,7 +8,7 @@ pub struct Entity {
     pub sprite: Sprite,
     pub physics: Physics,
     pub collideable: bool,
-    pub contact: bool,
+    pub airtime: u32,
 }
 
 impl Entity {
@@ -17,7 +17,7 @@ impl Entity {
             sprite,
             physics: Physics::default(),
             collideable,
-            contact: false,
+            airtime: 0,
         }
     }
 
@@ -26,7 +26,7 @@ impl Entity {
             sprite,
             physics: physics,
             collideable,
-            contact: false,
+            airtime: 0,
         }
     }
 
@@ -62,7 +62,7 @@ impl Entity {
                 _ => return Err("Malformed JSON data: expected bool")
             },
             physics: Physics::new(mass, friction, bounciness),
-            contact: false,
+            airtime: 0,
         })
     }
 
