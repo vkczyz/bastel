@@ -1,4 +1,5 @@
-#[derive(Clone, PartialEq)]
+use crate::components::Component;
+
 pub struct PhysicsComponent {
     pub mass: f32,
     pub acceleration: (f32, f32),
@@ -6,3 +7,5 @@ pub struct PhysicsComponent {
     friction: f32,
     bounciness: f32,
 }
+
+impl Component for PhysicsComponent { }

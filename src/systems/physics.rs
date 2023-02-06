@@ -1,4 +1,4 @@
-use create::components::physics::PhysicsComponent;
+use crate::components::physics::PhysicsComponent;
 
 pub struct PhysicsSystem { }
 

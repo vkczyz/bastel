@@ -1,3 +1,4 @@
+use crate::components::Component;
 use crate::entity::Entity;
 
 use winit::event::{ElementState, KeyboardInput};
@@ -9,6 +10,8 @@ pub struct InputComponent {
     pub left: bool,
     pub right: bool,
 }
+
+impl Component for InputComponent { }
 
 impl InputComponent {
     pub fn new() -> Self {

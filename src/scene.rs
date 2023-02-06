@@ -1,4 +1,5 @@
 use crate::entity::Entity;
+use crate::systems::System;
 
 use std::path::PathBuf;
 
@@ -6,6 +7,7 @@ use miniserde;
 use miniserde::json;
 
 pub struct Scene {
+    pub systems: Vec<Box<dyn System>>,
     pub entities: Vec<Entity>,
 }
 
@@ -13,6 +15,7 @@ impl Scene {
     pub fn new(entities: Vec<Entity>, player_index: usize) -> Self {
         Scene {
             entities,
+            systems: vec![],
         }
     }
 
@@ -51,6 +54,7 @@ impl Scene {
                     .collect::<Result<Vec<Entity>, &str>>()?,
                 _ => return Err("Malformed JSON data: expected array"),
             },
+            systems: vec![],
         })
     }
 }

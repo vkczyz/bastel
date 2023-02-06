@@ -1,3 +1,5 @@
-pub struct CollisionComponent {
-    pub collideable: bool,
-}
+use crate::components::Component;
+
+pub struct CollisionComponent { }
+
+impl Component for CollisionComponent { }

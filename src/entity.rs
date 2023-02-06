@@ -2,19 +2,20 @@ use crate::components::Component;
 
 use miniserde::json;
 
-#[derive(Clone, PartialEq)]
 pub struct Entity {
     pub id: u32,
-    pub components: Vec<Component>,
+    pub components: Vec<Box<dyn Component>>,
 }
 
 impl Entity {
-    pub fn new(id: u32, components: &[Component]) -> Self {
+    pub fn new(id: u32, components: Vec<Box<dyn Component>>) -> Self {
         Entity {
             id,
-            components: components.to_owned(),
+            components: components,
         }
     }
+
+    pub fn add_component(component: Box<dyn Component>) {}
 
     #[cfg(feature = "json")]
     pub fn from_json(data: &json::Value) -> Result<Self, &str> {

@@ -1,3 +1,4 @@
+use crate::components::Component;
 use crate::shaders::Shader;
 use crate::vertex::Vertex;
 
@@ -7,7 +8,6 @@ use std::path::Path;
 use miniserde;
 use miniserde::json;
 
-#[derive(Clone, PartialEq)]
 pub struct SpriteComponent {
     pub position: (f32, f32),
     pub size: (f32, f32),
@@ -17,6 +17,8 @@ pub struct SpriteComponent {
     pub shader: Shader,
     pub texture: Option<Vec<u8>>,
 }
+
+impl Component for SpriteComponent {}
 
 impl SpriteComponent {
     pub fn with_color(position: (f32, f32), size: (f32, f32), color: [f32; 3]) -> Self {

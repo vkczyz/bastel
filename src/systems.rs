@@ -1,8 +1,9 @@
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum System {
-    AudioSystem,
-    CollisionSystem,
-    InputSystem,
-    PhysicsSystem,
-    SpriteSystem,
+//pub mod audio;
+//pub mod collision;
+//pub mod input;
+//pub mod physics;
+//pub mod sprite;
+
+pub trait System {
+    fn run(&mut self);
 }

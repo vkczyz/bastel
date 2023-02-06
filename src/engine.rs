@@ -1,8 +1,7 @@
 use crate::entity::{Entity, Axis, Edge};
-use crate::components::Component;
-use crate::components::Component::InputComponent;
-use crate::components::Component::AudioComponent;
-use crate::components::Component::PhysicsComponent;
+use crate::components::input::InputComponent;
+use crate::components::audio::AudioComponent;
+use crate::components::physics::PhysicsComponent;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
 use crate::shaders::Shader;
@@ -52,7 +51,7 @@ impl Engine {
         let mut recreate_swapchain = false;
         let mut previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
 
-        let mut input_handler = InputComponent;
+        let mut input_handler = InputComponent::new();
 
         /*
         match self.scene.bgm.as_ref() {
@@ -202,6 +201,12 @@ impl Engine {
                         .unwrap()
                         .set_viewport(0, [self.renderer.viewport.clone()]);
 
+                    // Start point
+
+                    for system in &mut self.scene.systems {
+                        system.run();
+                    }
+
                     /*
                     for entity in &self.scene.entities {
                         let sprite = &entity.sprite;
@@ -277,8 +282,7 @@ impl Engine {
         });
     }
 
-    //fn update_position(&mut self, input: &InputComponent, entity_index: usize) {
-    fn update_position(&mut self, input: &Component, entity_index: usize) {
+    fn update_position(&mut self, input: &InputComponent, entity_index: usize) {
         let units = (
             1.0 / self.view_size.0 as f32,
             1.0 / self.view_size.1 as f32,

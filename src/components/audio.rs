@@ -1,3 +1,5 @@
+use crate::components::Component;
+
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
@@ -11,6 +13,8 @@ pub struct AudioComponent {
     pub bgm: Sink,
     bgm_stream: OutputStream,
 }
+
+impl Component for AudioComponent { }
 
 impl AudioComponent {
     pub fn new() -> Self {
