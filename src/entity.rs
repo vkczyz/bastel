@@ -1,5 +1,5 @@
 use crate::components::Component;
-
+use std::sync::{Arc, Mutex};
 use miniserde::json;
 
 pub struct Entity {
@@ -8,11 +8,13 @@ pub struct Entity {
 }
 
 impl Entity {
-    pub fn new(id: u32, components: Vec<Box<dyn Component>>) -> Self {
-        Entity {
-            id,
-            components: components,
-        }
+    pub fn new(id: u32, components: Vec<Box<dyn Component>>) -> Arc<Mutex<Self>> {
+        Arc::new(Mutex::new(
+            Entity {
+                id,
+                components: components,
+            }
+        ))
     }
 
     pub fn add_component(&mut self, component: Box<dyn Component>) {

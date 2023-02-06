@@ -2,17 +2,18 @@ use crate::entity::Entity;
 use crate::systems::System;
 
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 use miniserde;
 use miniserde::json;
 
 pub struct Scene {
     pub systems: Vec<Box<dyn System>>,
-    pub entities: Vec<Entity>,
+    pub entities: Vec<Arc<Mutex<Entity>>>,
 }
 
 impl Scene {
-    pub fn new(entities: Vec<Entity>) -> Self {
+    pub fn new(entities: Vec<Arc<Mutex<Entity>>>) -> Self {
         Scene {
             entities,
             systems: vec![],
@@ -23,6 +24,7 @@ impl Scene {
         self.systems.push(system);
     }
 
+    /*
     #[cfg(feature = "json")]
     pub fn from_json(data: &json::Value) -> Result<Self, &str> {
         let data = match data {
@@ -30,7 +32,6 @@ impl Scene {
             _ => return Err("Malformed JSON data: expected object"),
         };
 
-        /*
         let force = match data.get("force") {
             Some(json::Value::Array(a)) => a.iter()
                 .map(|n| match n {
@@ -41,7 +42,6 @@ impl Scene {
             _ => Ok(vec![0.0, 0.0]),
         }?;
         let force = (force[0], force[1]);
-        */
 
         Ok(Scene {
             entities: match data.get("entities") {
@@ -53,4 +53,5 @@ impl Scene {
             systems: vec![],
         })
     }
+    */
 }

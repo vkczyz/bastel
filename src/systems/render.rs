@@ -1,4 +1,3 @@
-use crate::engine::Engine;
 use crate::renderer::Renderer;
 use crate::systems::System;
 use crate::shaders::Shader;
@@ -6,11 +5,9 @@ use crate::shaders::Shader;
 use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, SubpassContents};
 use vulkano::descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet};
-use vulkano::pipeline::{Pipeline, PipelineBindPoint};
+use vulkano::pipeline::PipelineBindPoint;
 use vulkano::sync;
 use vulkano::sync::{GpuFuture, FlushError};
-use winit::event::{Event, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
 
 pub struct RenderSystem {
     pub renderer: Renderer,

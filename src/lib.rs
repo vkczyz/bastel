@@ -50,7 +50,8 @@ pub extern "C" fn init_with_scene(title: *const c_char, width: u32, height: u32,
         .as_str()
     ).unwrap();
 
-    let scene = Scene::from_json(&scene).unwrap();
+    let scene = Scene::new(vec![]);
+    //let scene = Scene::from_json(&scene).unwrap();
     let (mut engine, event_loop) = Engine::new(title, width, height);
     engine.scene = scene;
 
