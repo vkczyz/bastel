@@ -5,10 +5,8 @@ use miniserde::json;
 
 #[derive(Clone, PartialEq)]
 pub struct Entity {
-    pub sprite: Sprite,
-    pub physics: Physics,
-    pub collideable: bool,
-    pub airtime: u32,
+    pub id: String,
+    pub components: Vec<Component>,
 }
 
 impl Entity {
