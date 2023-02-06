@@ -15,7 +15,9 @@ impl Entity {
         }
     }
 
-    pub fn add_component(component: Box<dyn Component>) {}
+    pub fn add_component(&mut self, component: Box<dyn Component>) {
+        self.components.push(component);
+    }
 
     #[cfg(feature = "json")]
     pub fn from_json(data: &json::Value) -> Result<Self, &str> {
