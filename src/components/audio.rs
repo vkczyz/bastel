@@ -7,16 +7,16 @@ use rodio::{Decoder, OutputStream, Sink};
 use rodio::source::Source;
 
 #[allow(dead_code)]
-pub struct Audio {
+pub struct AudioComponent {
     pub bgm: Sink,
     bgm_stream: OutputStream,
 }
 
-impl Audio {
+impl AudioComponent {
     pub fn new() -> Self {
         let (bgm_stream, bgm_handle) = OutputStream::try_default().unwrap();
 
-        Audio {
+        AudioComponent {
             bgm: Sink::try_new(&bgm_handle).unwrap(),
             bgm_stream: bgm_stream,
         }

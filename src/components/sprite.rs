@@ -8,7 +8,7 @@ use miniserde;
 use miniserde::json;
 
 #[derive(Clone, PartialEq)]
-pub struct Sprite {
+pub struct SpriteComponent {
     pub position: (f32, f32),
     pub size: (f32, f32),
     pub vertices: Vec<Vertex>,
@@ -18,7 +18,7 @@ pub struct Sprite {
     pub texture: Option<Vec<u8>>,
 }
 
-impl Sprite {
+impl SpriteComponent {
     pub fn with_color(position: (f32, f32), size: (f32, f32), color: [f32; 3]) -> Self {
         let vertices = vec!(
             Vertex {
@@ -44,7 +44,7 @@ impl Sprite {
         );
         let indices = vec!(0, 1, 2, 2, 3, 0);
 
-        Sprite {
+        SpriteComponent {
             position,
             size,
             vertices,
@@ -89,7 +89,7 @@ impl Sprite {
             },
         };
 
-        Sprite {
+        SpriteComponent {
             position,
             size,
             vertices,
@@ -125,7 +125,7 @@ impl Sprite {
         );
         let indices = vec!(0, 1, 2, 2, 3, 0);
 
-        Sprite {
+        SpriteComponent {
             position,
             size,
             vertices,
@@ -161,7 +161,7 @@ impl Sprite {
         );
         let indices = vec!(0, 1, 2, 2, 3, 0);
 
-        Sprite {
+        SpriteComponent {
             position,
             size,
             vertices,
@@ -213,20 +213,20 @@ impl Sprite {
                             _ => Err("Malformed JSON data: expected array"),
                         }?;
 
-                        Ok(Sprite::with_color(
+                        Ok(SpriteComponent::with_color(
                             (position[0], position[1]),
                             (size[0], size[1]),
                             [color[0], color[1], color[2]],
                         ))
                     },
                     "invisible" => {
-                        Ok(Sprite::invisible(
+                        Ok(SpriteComponent::invisible(
                             (position[0], position[1]),
                             (size[0], size[1]),
                         ))
                     },
                     "rainbow" => {
-                        Ok(Sprite::rainbow(
+                        Ok(SpriteComponent::rainbow(
                             (position[0], position[1]),
                             (size[0], size[1]),
                         ))
@@ -237,7 +237,7 @@ impl Sprite {
                             _ => return Err("Malformed JSON data: expected string"),
                         };
 
-                        Ok(Sprite::with_texture(
+                        Ok(SpriteComponent::with_texture(
                             (position[0], position[1]),
                             (size[0], size[1]),
                             Path::new(texture),

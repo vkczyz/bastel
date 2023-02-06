@@ -1,5 +1,5 @@
 #[derive(Clone, PartialEq)]
-pub struct Physics {
+pub struct PhysicsComponent {
     pub mass: f32,
     pub acceleration: (f32, f32),
     pub velocity: (f32, f32),
@@ -7,9 +7,9 @@ pub struct Physics {
     bounciness: f32,
 }
 
-impl Physics {
+impl PhysicsComponent {
     pub fn new(mass: f32, friction: f32, bounciness: f32) -> Self {
-        Physics {
+        PhysicsComponent {
             mass,
             acceleration: (0.0, 0.0),
             velocity: (0.0, 0.0),
@@ -19,7 +19,7 @@ impl Physics {
     }
 
     pub fn default() -> Self {
-        Physics {
+        PhysicsComponent {
             mass: 1.0,
             acceleration: (0.0, 0.0),
             velocity: (0.0, 0.0),

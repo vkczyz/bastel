@@ -1,11 +1,10 @@
-use crate::physics::Physics;
-use crate::sprite::Sprite;
+use crate::components::Component;
 
 use miniserde::json;
 
 #[derive(Clone, PartialEq)]
 pub struct Entity {
-    pub id: String,
+    pub id: u32,
     pub components: Vec<Component>,
 }
 

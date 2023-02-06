@@ -2,7 +2,7 @@ use crate::entity::Entity;
 
 use winit::event::{ElementState, KeyboardInput};
 
-pub struct Input {
+pub struct InputComponent {
     pub cursor: [f32; 2],
     pub up: bool,
     pub down: bool,
@@ -10,9 +10,9 @@ pub struct Input {
     pub right: bool,
 }
 
-impl Input {
+impl InputComponent {
     pub fn new() -> Self {
-        Input {
+        InputComponent {
             cursor: [0.0, 0.0],
             up: false,
             down: false,

@@ -1,13 +1,11 @@
 pub mod engine;
 pub mod entity;
 pub mod scene;
-pub mod sprite;
-mod physics;
+pub mod components;
+pub mod systems;
 mod renderer;
 mod shaders;
 mod vertex;
-mod input;
-mod audio;
 
 use engine::Engine;
 use scene::Scene;
