@@ -1,5 +1,6 @@
 use crate::components::{Component, self};
 use std::sync::{Arc, Mutex};
+use std::mem::{discriminant, Discriminant};
 use miniserde::json;
 
 pub struct Entity {
@@ -19,34 +20,6 @@ impl Entity {
 
     pub fn add_component(&mut self, component: Component) {
         self.components.push(component);
-    }
-
-    pub fn get_component(&self, component: Component) -> Option<Component> {
-        for comp in self.components {
-            if let component = comp {
-                return Some(comp);
-            }
-        }
-
-        None
-    }
-
-    pub fn find_entities_with_component(entities: &[Arc<Mutex<Entity>>], requirement: Component) {
-        entities
-        .iter()
-        .map(|e| *Arc::clone(e).lock().expect("Could not acquire entity"))
-        .filter(|e|
-            for component in e.components.iter() {
-                for requirement in requirements.iter() {
-                    if let requirement = component {
-                        matches += 1;
-                    }
-                }
-            }
-
-            return (matches == requirements.length())
-        )
-        .collect()
     }
 
     /*

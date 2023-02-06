@@ -1,4 +1,3 @@
-use crate::components::Component;
 use crate::shaders::Shader;
 use crate::vertex::Vertex;
 

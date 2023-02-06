@@ -1,5 +1,3 @@
-use crate::components::Component;
-
 pub struct PhysicsComponent {
     pub mass: f32,
     pub acceleration: (f32, f32),

@@ -1,4 +1,3 @@
-use crate::components::Component;
 use crate::entity::Entity;
 
 use winit::event::{ElementState, KeyboardInput};

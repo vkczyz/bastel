@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::components::Component;
+use crate::components::sprite::SpriteComponent;
 use crate::entity::Entity;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
@@ -10,22 +11,22 @@ use crate::systems::System;
 use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, SubpassContents};
 use vulkano::descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet};
-use vulkano::pipeline::PipelineBindPoint;
+use vulkano::pipeline::{Pipeline, PipelineBindPoint};
 use vulkano::sync;
 use vulkano::sync::{GpuFuture, FlushError};
 
 pub struct RenderSystem {
-    pub renderer: Renderer,
     pub recreate_swapchain: bool,
     pub previous_frame_end: Option<Box<dyn GpuFuture>>,
+    pub renderer: Renderer,
 }
 
 impl RenderSystem {
     pub fn new(renderer: Renderer) -> Self {
         RenderSystem {
-            renderer,
             recreate_swapchain: false,
             previous_frame_end: Some(sync::now(renderer.device.clone()).boxed()),
+            renderer,
         }
     }
 
@@ -114,53 +115,52 @@ impl System for RenderSystem {
             .unwrap()
             .set_viewport(0, [self.renderer.viewport.clone()]);
 
-        let sprites = scene.entities
-        .iter()
-        .map(|x| *Arc::clone(x).lock().expect("Could not acquire entity").components)
-        .filter(|x| )
 
         for entity in &scene.entities {
-            let unlocked_entity = *Arc::clone(&entity).lock().expect("Could not acquire entity");
-            let sprite = match unlocked_entity.components.iter().find(|x| x == Component::Sprite) {
-                Some(s) => s,
-                _ => continue,
-            };
+            let unlocked_entity = entity.clone();
+            let unlocked_entity = unlocked_entity.lock().expect("Could not acquire entity");
+            for component in unlocked_entity.components.iter() {
+                if let Component::Sprite(sprite) = component {
 
-            let vertices = Renderer::create_vertex_buffer(sprite.vertices.clone(), &self.renderer.device);
-            let indices = CpuAccessibleBuffer::from_iter(self.renderer.device.clone(), BufferUsage::all(), false, sprite.indices.clone())
-                .expect("Failed to create buffer");
-            let pipeline = self.renderer.pipelines[&sprite.shader].clone();
+                    let vertices = Renderer::create_vertex_buffer(sprite.vertices.clone(), &self.renderer.device);
+                    let indices = CpuAccessibleBuffer::from_iter(self.renderer.device.clone(), BufferUsage::all(), false, sprite.indices.clone())
+                        .expect("Failed to create buffer");
+                    let pipeline = self.renderer.pipelines[&sprite.shader].clone();
 
-            builder
-                .bind_pipeline_graphics(pipeline.clone());
+                    builder
+                        .bind_pipeline_graphics(pipeline.clone());
 
-            if let (Shader::Texture, Some(s)) = (sprite.shader, &sprite.texture) {
-                let (texture, texture_future) = self.renderer.create_texture(s);
-                let layout = pipeline.layout().descriptor_set_layouts().get(0).unwrap();
-                let set = PersistentDescriptorSet::new(
-                    layout.clone(),
-                    [WriteDescriptorSet::image_view_sampler(
-                        0,
-                        texture,
-                        self.renderer.sampler.clone(),
-                    )],
-                ).unwrap();
+                    if let (Shader::Texture, Some(s)) = (sprite.shader, &sprite.texture) {
+                        let (texture, texture_future) = self.renderer.create_texture(s);
+                        let layout = pipeline.layout().descriptor_set_layouts().get(0).unwrap();
+                        let set = PersistentDescriptorSet::new(
+                            layout.clone(),
+                            [WriteDescriptorSet::image_view_sampler(
+                                0,
+                                texture,
+                                self.renderer.sampler.clone(),
+                            )],
+                        ).unwrap();
 
-                previous_frame_end = Some(texture_future.boxed());
+                        previous_frame_end = Some(texture_future.boxed());
 
-                builder.bind_descriptor_sets(
-                    PipelineBindPoint::Graphics,
-                    pipeline.layout().clone(),
-                    0,
-                    set.clone(),
-                );
+                        builder.bind_descriptor_sets(
+                            PipelineBindPoint::Graphics,
+                            pipeline.layout().clone(),
+                            0,
+                            set.clone(),
+                        );
+                    }
+
+                    builder
+                        .bind_vertex_buffers(0, vertices.clone())
+                        .bind_index_buffer(indices.clone())
+                        .draw_indexed(indices.len() as u32, vertices.len() as u32, 0, 0, 0)
+                        .unwrap();
+
+                    break;
+                }
             }
-
-            builder
-                .bind_vertex_buffers(0, vertices.clone())
-                .bind_index_buffer(indices.clone())
-                .draw_indexed(indices.len() as u32, vertices.len() as u32, 0, 0, 0)
-                .unwrap();
         }
 
         builder
