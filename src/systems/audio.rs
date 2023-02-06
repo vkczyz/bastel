@@ -1,3 +1,3 @@
 pub struct AudioSystem { }
 
-impl AudioComponent { }
+impl AudioSystem { }

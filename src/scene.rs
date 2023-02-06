@@ -12,20 +12,16 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub fn new(entities: Vec<Entity>, player_index: usize) -> Self {
+    pub fn new(entities: Vec<Entity>) -> Self {
         Scene {
             entities,
             systems: vec![],
         }
     }
 
-    /*
-    pub fn with_force(entities: Vec<Entity>, player_index: usize, force: (f32, f32)) -> Self {
-        Scene {
-            entities,
-        }
+    pub fn add_system(&mut self, system: Box<dyn System>) {
+        self.systems.push(system);
     }
-    */
 
     #[cfg(feature = "json")]
     pub fn from_json(data: &json::Value) -> Result<Self, &str> {
