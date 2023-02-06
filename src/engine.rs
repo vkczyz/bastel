@@ -1,6 +1,8 @@
 use crate::entity::{Entity, Axis, Edge};
-use crate::input::Input;
-use crate::audio::Audio;
+use crate::components::Component;
+use crate::components::Component::InputComponent;
+use crate::components::Component::AudioComponent;
+use crate::components::Component::PhysicsComponent;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
 use crate::shaders::Shader;
@@ -21,10 +23,8 @@ pub struct Engine {
     pub window_size: (u32, u32),
     pub view_size: (u32, u32),
     pub fps: u64,
-    pub renderer: Renderer,
-    pub input: Input,
-    pub audio: Audio,
     pub scene: Scene,
+    renderer: Renderer,
 }
 
 impl Engine {
@@ -38,8 +38,6 @@ impl Engine {
             view_size: (width, height),
             fps,
             renderer,
-            input: Input::new(),
-            audio: Audio::new(),
             scene: Scene::new(
                 vec![],
                 1,
@@ -54,12 +52,14 @@ impl Engine {
         let mut recreate_swapchain = false;
         let mut previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
 
-        let mut input_handler = Input::new();
+        let mut input_handler = InputComponent;
 
+        /*
         match self.scene.bgm.as_ref() {
             Some(p) => self.audio.play_bgm(p),
             None => {},
         }
+        */
 
         event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::WaitUntil(
@@ -116,7 +116,7 @@ impl Engine {
                     },
                     ..
                 } => {
-                    input_handler.handle_input(input);
+                    //input_handler.handle_input(input);
                 }
 
                 Event::WindowEvent {
@@ -126,9 +126,11 @@ impl Engine {
                     },
                     ..
                 } => {
+                    /*
                     if input_handler.is_valid_cursor_position() {
                         println!("({}, {})", input_handler.cursor[0], input_handler.cursor[1]);
                     }
+                    */
                 },
 
                 Event::WindowEvent {
@@ -152,12 +154,14 @@ impl Engine {
                     pos[0] *= real_dims[0] / view_dims[0];
                     pos[1] *= real_dims[1] / view_dims[1];
 
-                    input_handler.cursor = pos;
+                    //input_handler.cursor = pos;
                 }
 
                 Event::RedrawEventsCleared => {
+                    /*
                     let entity_index = self.scene.player_index;
                     self.update_position(&input_handler, entity_index);
+                    */
 
                     previous_frame_end.as_mut().unwrap().cleanup_finished();
 
@@ -198,6 +202,7 @@ impl Engine {
                         .unwrap()
                         .set_viewport(0, [self.renderer.viewport.clone()]);
 
+                    /*
                     for entity in &self.scene.entities {
                         let sprite = &entity.sprite;
                         let vertices = Renderer::create_vertex_buffer(sprite.vertices.clone(), &self.renderer.device);
@@ -236,6 +241,7 @@ impl Engine {
                             .draw_indexed(indices.len() as u32, vertices.len() as u32, 0, 0, 0)
                             .unwrap();
                     }
+                    */
 
                     builder
                         .end_render_pass()
@@ -271,16 +277,23 @@ impl Engine {
         });
     }
 
-    fn update_position(&mut self, input: &Input, entity_index: usize) {
+    //fn update_position(&mut self, input: &InputComponent, entity_index: usize) {
+    fn update_position(&mut self, input: &Component, entity_index: usize) {
         let units = (
             1.0 / self.view_size.0 as f32,
             1.0 / self.view_size.1 as f32,
         );
 
+        /*
         // Apply scene forces
         let player = &mut self.scene.entities[entity_index];
         let global = self.scene.force;
-        player.physics.apply_force(global);
+        //player.physics.apply_force(global);
+        for component in player.components {
+            match component {
+                PhysicsComponent(x) => x.apply_force(global),
+            }
+        }
 
         // Apply input forces
         input.handle_movement(
@@ -372,5 +385,6 @@ impl Engine {
         player.sprite.change_position(pos);
 
         player.physics.reset();
+        */
     }
 }

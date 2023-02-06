@@ -9,21 +9,10 @@ pub struct Entity {
 }
 
 impl Entity {
-    pub fn new(sprite: Sprite, collideable: bool) -> Self {
+    pub fn new(id: u32, components: &[Component]) -> Self {
         Entity {
-            sprite,
-            physics: Physics::default(),
-            collideable,
-            airtime: 0,
-        }
-    }
-
-    pub fn with_physics(sprite: Sprite, collideable: bool, physics: Physics) -> Self {
-        Entity {
-            sprite,
-            physics: physics,
-            collideable,
-            airtime: 0,
+            id,
+            components: components.to_owned(),
         }
     }
 
@@ -50,6 +39,11 @@ impl Entity {
         };
 
         Ok(Entity {
+            id: 1,
+            components: vec![],
+        })
+        /*
+        Ok(Entity {
             sprite: match data.get("sprite") {
                 Some(s) => Sprite::from_json(s)?,
                 _ => return Err("Malformed JSON data: expected object"),
@@ -61,8 +55,10 @@ impl Entity {
             physics: Physics::new(mass, friction, bounciness),
             airtime: 0,
         })
+        */
     }
 
+    /*
     pub fn are_colliding(a: &Entity, b: &Entity) -> bool {
         let a = &a.sprite;
         let b = &b.sprite;
@@ -100,6 +96,7 @@ impl Entity {
 
         intersection_edges
     }
+    */
 }
 
 pub enum Axis {

@@ -58,7 +58,7 @@ impl InputComponent {
             0.0 + (self.down as i32 as f32),
         ));
         let force = (force.0 * strength.0, force.1 * strength.1);
-        player.physics.apply_force(force);
+        //player.physics.apply_force(force);
     }
 
     pub fn is_valid_cursor_position(&self) -> bool {
