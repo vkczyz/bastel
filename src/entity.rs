@@ -19,6 +19,8 @@ impl Entity {
 
     #[cfg(feature = "json")]
     pub fn from_json(data: &json::Value) -> Result<Self, &str> {
+        use crate::components::{sprite::SpriteComponent, collision::CollisionComponent, physics::PhysicsComponent};
+
         let data = match data {
             json::Value::Object(o) => o,
             _ => return Err("Malformed JSON data: expected object"),
@@ -39,24 +41,24 @@ impl Entity {
             _ => 1.0,
         };
 
+        let mut components: Vec<Box<dyn Component>> = vec![];
+
+        match data.get("sprite") {
+            Some(s) => components.push(Box::new(SpriteComponent::from_json(s)?)),
+            _ => return Err("Malformed JSON data: expected object"),
+        };
+
+        match data.get("collideable") {
+            Some(json::Value::Bool(true)) => components.push(Box::new(CollisionComponent{})),
+            _ => return Err("Malformed JSON data: expected object"),
+        };
+
+        components.push(Box::new(PhysicsComponent::new(mass, friction, bounciness)));
+
         Ok(Entity {
-            id: 1,
-            components: vec![],
+            id: 0,
+            components,
         })
-        /*
-        Ok(Entity {
-            sprite: match data.get("sprite") {
-                Some(s) => Sprite::from_json(s)?,
-                _ => return Err("Malformed JSON data: expected object"),
-            },
-            collideable: match data.get("collideable") {
-                Some(json::Value::Bool(b)) => *b,
-                _ => return Err("Malformed JSON data: expected bool")
-            },
-            physics: Physics::new(mass, friction, bounciness),
-            airtime: 0,
-        })
-        */
     }
 
     /*
