@@ -68,6 +68,7 @@ impl Renderer {
     fn get_surface(event_loop: &EventLoop<()>, instance: &Arc<Instance>, title: &str) -> Arc<Surface<Window>> {
         let window = WindowBuilder::new().build(event_loop).unwrap();
         window.set_title(title);
+        window.set_cursor_visible(false);
         let surface = create_vk_surface_from_handle(window, instance.clone()).unwrap();
 
         surface
