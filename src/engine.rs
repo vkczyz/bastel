@@ -2,15 +2,11 @@ use crate::entity::{Entity, Axis, Edge};
 use crate::renderer::Renderer;
 use crate::scene::Scene;
 
-use crate::components::input::InputComponent;
+use crate::components::Component;
 use crate::systems::render::RenderSystem;
 
 use std::time::{Duration, Instant};
 
-use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
-use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, SubpassContents};
-use vulkano::descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet};
-use vulkano::pipeline::{Pipeline, PipelineBindPoint};
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 
@@ -124,7 +120,7 @@ impl Engine {
     pub add_system(scene: &mut Scene, system: System) -> &mut Entity
     */
 
-    fn update_position(&mut self, input: &InputComponent, entity_index: usize) {
+    fn update_position(&mut self, input: &Component, entity_index: usize) {
         let units = (
             1.0 / self.view_size.0 as f32,
             1.0 / self.view_size.1 as f32,

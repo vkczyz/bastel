@@ -8,8 +8,6 @@ pub struct PhysicsComponent {
     bounciness: f32,
 }
 
-impl Component for PhysicsComponent { }
-
 impl PhysicsComponent {
     pub fn new(mass: f32, friction: f32, bounciness: f32) -> Self {
         PhysicsComponent {

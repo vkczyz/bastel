@@ -1,6 +1,11 @@
+use std::sync::Arc;
+
+use crate::components::Component;
+use crate::entity::Entity;
 use crate::renderer::Renderer;
-use crate::systems::System;
+use crate::scene::Scene;
 use crate::shaders::Shader;
+use crate::systems::System;
 
 use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, SubpassContents};
@@ -62,7 +67,7 @@ impl RenderSystem {
 }
 
 impl System for RenderSystem {
-    fn run(&mut self) {
+    fn run(&mut self, scene: &Scene) {
         // Convert FPS to redraw frequency
 
         let mut recreate_swapchain = false;
@@ -109,8 +114,18 @@ impl System for RenderSystem {
             .unwrap()
             .set_viewport(0, [self.renderer.viewport.clone()]);
 
-        for entity in &self.scene.entities {
-            let sprite = &entity.sprite;
+        let sprites = scene.entities
+        .iter()
+        .map(|x| *Arc::clone(x).lock().expect("Could not acquire entity").components)
+        .filter(|x| )
+
+        for entity in &scene.entities {
+            let unlocked_entity = *Arc::clone(&entity).lock().expect("Could not acquire entity");
+            let sprite = match unlocked_entity.components.iter().find(|x| x == Component::Sprite) {
+                Some(s) => s,
+                _ => continue,
+            };
+
             let vertices = Renderer::create_vertex_buffer(sprite.vertices.clone(), &self.renderer.device);
             let indices = CpuAccessibleBuffer::from_iter(self.renderer.device.clone(), BufferUsage::all(), false, sprite.indices.clone())
                 .expect("Failed to create buffer");

@@ -18,8 +18,6 @@ pub struct SpriteComponent {
     pub texture: Option<Vec<u8>>,
 }
 
-impl Component for SpriteComponent {}
-
 impl SpriteComponent {
     pub fn with_color(position: (f32, f32), size: (f32, f32), color: [f32; 3]) -> Self {
         let vertices = vec!(

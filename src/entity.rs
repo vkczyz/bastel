@@ -1,30 +1,57 @@
-use crate::components::Component;
+use crate::components::{Component, self};
 use std::sync::{Arc, Mutex};
 use miniserde::json;
 
 pub struct Entity {
     pub id: u32,
-    pub components: Vec<Box<dyn Component>>,
+    pub components: Vec<Component>,
 }
 
 impl Entity {
-    pub fn new(id: u32, components: Vec<Box<dyn Component>>) -> Arc<Mutex<Self>> {
+    pub fn new(id: u32, components: Vec<Component>) -> Arc<Mutex<Self>> {
         Arc::new(Mutex::new(
             Entity {
                 id,
-                components: components,
+                components,
             }
         ))
     }
 
-    pub fn add_component(&mut self, component: Box<dyn Component>) {
+    pub fn add_component(&mut self, component: Component) {
         self.components.push(component);
     }
 
+    pub fn get_component(&self, component: Component) -> Option<Component> {
+        for comp in self.components {
+            if let component = comp {
+                return Some(comp);
+            }
+        }
+
+        None
+    }
+
+    pub fn find_entities_with_component(entities: &[Arc<Mutex<Entity>>], requirement: Component) {
+        entities
+        .iter()
+        .map(|e| *Arc::clone(e).lock().expect("Could not acquire entity"))
+        .filter(|e|
+            for component in e.components.iter() {
+                for requirement in requirements.iter() {
+                    if let requirement = component {
+                        matches += 1;
+                    }
+                }
+            }
+
+            return (matches == requirements.length())
+        )
+        .collect()
+    }
+
+    /*
     #[cfg(feature = "json")]
     pub fn from_json(data: &json::Value) -> Result<Self, &str> {
-        use crate::components::{sprite::SpriteComponent, collision::CollisionComponent, physics::PhysicsComponent};
-
         let data = match data {
             json::Value::Object(o) => o,
             _ => return Err("Malformed JSON data: expected object"),
@@ -45,7 +72,7 @@ impl Entity {
             _ => 1.0,
         };
 
-        let mut components: Vec<Box<dyn Component>> = vec![];
+        let mut components: Vec<Box<Component>> = vec![];
 
         match data.get("sprite") {
             Some(s) => components.push(Box::new(SpriteComponent::from_json(s)?)),
@@ -64,6 +91,7 @@ impl Entity {
             components,
         })
     }
+    */
 
     /*
     pub fn are_colliding(a: &Entity, b: &Entity) -> bool {

@@ -11,8 +11,6 @@ pub struct InputComponent {
     pub right: bool,
 }
 
-impl Component for InputComponent { }
-
 impl InputComponent {
     pub fn new() -> Self {
         InputComponent {

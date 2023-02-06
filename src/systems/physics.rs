@@ -1,28 +1,7 @@
-use crate::components::physics::PhysicsComponent;
-
 pub struct PhysicsSystem { }
 
 impl PhysicsSystem {
-    pub fn new(mass: f32, friction: f32, bounciness: f32) -> Self {
-        PhysicsComponent {
-            mass,
-            acceleration: (0.0, 0.0),
-            velocity: (0.0, 0.0),
-            friction,
-            bounciness,
-        }
-    }
-
-    pub fn default() -> Self {
-        PhysicsComponent {
-            mass: 1.0,
-            acceleration: (0.0, 0.0),
-            velocity: (0.0, 0.0),
-            friction: 0.5,
-            bounciness: 1.0,
-        }
-    }
-
+    /*
     pub fn update(&mut self) {
         self.velocity.0 += self.acceleration.0;
         self.velocity.1 += self.acceleration.1;
@@ -61,4 +40,5 @@ impl PhysicsSystem {
     pub fn reset(&mut self) {
         self.acceleration = (0.0, 0.0);
     }
+    */
 }

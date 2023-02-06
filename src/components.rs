@@ -6,4 +6,22 @@ pub mod physics;
 pub mod render;
 pub mod sprite;
 
-pub trait Component { }
+use crate::components::{
+    audio::AudioComponent,
+    collision::CollisionComponent,
+    input::InputComponent,
+    moveable::MoveableComponent,
+    physics::PhysicsComponent,
+    render::RenderComponent,
+    sprite::SpriteComponent,
+};
+
+pub enum Component {
+    Audio(AudioComponent),
+    Collision(CollisionComponent),
+    Input(InputComponent),
+    Moveable(MoveableComponent),
+    Physics(PhysicsComponent),
+    Render(RenderComponent),
+    Sprite(SpriteComponent),
+}

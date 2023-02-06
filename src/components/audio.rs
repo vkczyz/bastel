@@ -14,8 +14,6 @@ pub struct AudioComponent {
     bgm_stream: OutputStream,
 }
 
-impl Component for AudioComponent { }
-
 impl AudioComponent {
     pub fn new() -> Self {
         let (bgm_stream, bgm_handle) = OutputStream::try_default().unwrap();
