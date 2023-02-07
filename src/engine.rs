@@ -37,7 +37,7 @@ impl Engine {
     }
 
     pub fn run(mut self, event_loop: EventLoop<()>) {
-        //self.scene.add_system(Box::new(RenderSystem::new(self.renderer, event_loop, self.fps)));
+        self.scene.add_system(Box::new(RenderSystem::new(self.renderer)));
 
         let freq_millis = 1000 / self.fps;
 
@@ -56,6 +56,7 @@ impl Engine {
                     event: WindowEvent::Resized(size),
                     ..
                 } => {
+                    // Resizing
                 },
 
                 Event::WindowEvent {
@@ -89,6 +90,7 @@ impl Engine {
                     },
                     ..
                 } => {
+                    /*
                     let real_dims: [f32; 2] = self.renderer.viewport.dimensions.into();
                     let view_dims: [f32; 2] = [
                         real_dims[0] - 2.0 * self.renderer.viewport.origin[0],
@@ -103,10 +105,14 @@ impl Engine {
                     pos[0] *= real_dims[0] / view_dims[0];
                     pos[1] *= real_dims[1] / view_dims[1];
 
-                    //input_handler.cursor = pos;
+                    input_handler.cursor = pos;
+                    */
                 }
 
                 Event::RedrawEventsCleared => {
+                    for system in self.scene.systems.iter_mut() {
+                        system.run(&mut self.scene.entities);
+                    }
                 },
                 _ => (),
             }

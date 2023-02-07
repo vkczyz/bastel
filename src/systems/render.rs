@@ -1,10 +1,9 @@
 use std::sync::Arc;
+use std::sync::Mutex;
 
 use crate::components::Component;
-use crate::components::sprite::SpriteComponent;
 use crate::entity::Entity;
 use crate::renderer::Renderer;
-use crate::scene::Scene;
 use crate::shaders::Shader;
 use crate::systems::System;
 
@@ -68,7 +67,7 @@ impl RenderSystem {
 }
 
 impl System for RenderSystem {
-    fn run(&mut self, scene: &Scene) {
+    fn run(&mut self, entities: &mut [Arc<Mutex<Entity>>]) {
         // Convert FPS to redraw frequency
 
         let mut recreate_swapchain = false;
@@ -116,7 +115,7 @@ impl System for RenderSystem {
             .set_viewport(0, [self.renderer.viewport.clone()]);
 
 
-        for entity in &scene.entities {
+        for entity in entities {
             let unlocked_entity = entity.clone();
             let unlocked_entity = unlocked_entity.lock().expect("Could not acquire entity");
             for component in unlocked_entity.components.iter() {

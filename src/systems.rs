@@ -5,8 +5,10 @@ pub mod physics;
 pub mod render;
 pub mod sprite;
 
-use crate::scene::Scene;
+use crate::entity::Entity;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 pub trait System {
-    fn run(&mut self, scene: &Scene);
+    fn run(&mut self, entities: &mut [Arc<Mutex<Entity>>]);
 }
