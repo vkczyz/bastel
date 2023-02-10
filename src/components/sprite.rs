@@ -148,7 +148,7 @@ impl SpriteComponent {
                     "shader" => match a.value() {
                         "solid" => shader = Shader::Solid,
                         "texture" => shader = Shader::Texture,
-                        "rainbow" => {println!("a rainbow has appeared!"); shader = Shader::Rainbow},
+                        "rainbow" => shader = Shader::Rainbow,
                         _ => shader = Shader::Rainbow,
                     },
                     "color" => color = a.value(),
