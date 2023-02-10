@@ -94,7 +94,7 @@ impl System for AudioSystem {
             }
         }
 
-        if !(play_bgm && play_sfx) {
+        if !(play_bgm || play_sfx) {
             return;
         }
 

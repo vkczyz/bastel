@@ -20,6 +20,10 @@ impl Scene {
         }
     }
 
+    pub fn add_entity(&mut self, entity: Arc<Mutex<Entity>>) {
+        self.entities.push(entity);
+    }
+
     pub fn add_system(&mut self, system: Box<dyn System>) {
         self.systems.push(system);
     }

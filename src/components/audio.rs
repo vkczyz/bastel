@@ -1,3 +1,5 @@
+use crate::components::Component;
+
 #[allow(dead_code)]
 pub struct AudioComponent {
     pub muted: bool,
@@ -6,11 +8,13 @@ pub struct AudioComponent {
 }
 
 impl AudioComponent {
-    pub fn new() -> Self {
-        AudioComponent {
-            muted: false,
-            bgm: None,
-            sfx: None,
-        }
+    pub fn new() -> Component {
+        Component::Audio(
+            AudioComponent {
+                muted: false,
+                bgm: None,
+                sfx: None,
+            }
+        )
     }
 }

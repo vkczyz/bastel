@@ -1,3 +1,5 @@
+use crate::components;
+use crate::entity::Entity;
 use crate::global::Global;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
@@ -35,6 +37,9 @@ impl Engine {
     }
 
     pub fn run(mut self, event_loop: EventLoop<()>) {
+        self.scene.add_entity(Entity::new(43, vec![
+            components::audio::AudioComponent::new(),
+        ]));
         self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
         self.scene.add_system(Box::new(AudioSystem::new(self.global.clone())));
 
