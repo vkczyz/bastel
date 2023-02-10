@@ -158,7 +158,6 @@ impl SpriteComponent {
             }
         ).for_each(drop);
 
-        println!("color");
         let color = decode_hex(color).unwrap_or(vec![0.0, 0.0, 0.0]);
         let color = [color[0], color[1], color[2]];
 
@@ -217,7 +216,7 @@ impl SpriteComponent {
 }
 
 fn decode_hex(s: &str) -> Result<Vec<f32>, ParseIntError> {
-    (0..s.len())
+    (1..s.len())
         .step_by(2)
         .map(|i| match u8::from_str_radix(&s[i..i + 2], 16) {
             Ok(n) => Ok(n as f32),
