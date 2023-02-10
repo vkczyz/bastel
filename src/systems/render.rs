@@ -72,12 +72,17 @@ impl System for RenderSystem {
         self.recreate_swapchain = false;
         self.previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
 
-        let gg = self.global.clone();
-        let mut g = gg.lock().expect("Could not unlock global object");
-        if let Some(true) = g.signals.get("resize") {
-            self.resize();
-            g.signals.insert("resize".to_string(), false);
+        let mut resize = false;
+        {
+            let gg = self.global.clone();
+            let mut g = gg.lock().expect("Could not unlock global object");
+            if let Some(true) = g.signals.get("resize") {
+                resize = true;
+                g.signals.insert("resize".to_string(), false);
+            }
         }
+
+        if resize { self.resize() }
         //self.update_position(&input_handler, entity_index);
 
         self.previous_frame_end.as_mut().unwrap().cleanup_finished();

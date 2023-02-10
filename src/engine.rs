@@ -20,12 +20,10 @@ impl Engine {
         let (renderer, event_loop) = Renderer::init(title, width, height);
         let fps = 60;
 
-        let global = Arc::new(Mutex::new(
-            Global::new(
-                title.to_string(),
-                (width, height),
-            )
-        ));
+        let global = Global::new(
+            title.to_string(),
+            (width, height),
+        );
 
         (Engine {
             global,
