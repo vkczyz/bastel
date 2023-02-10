@@ -1,7 +1,6 @@
 use crate::components::{Component, self};
 use std::sync::{Arc, Mutex};
 use std::mem::{discriminant, Discriminant};
-use miniserde::json;
 
 pub struct Entity {
     pub id: u32,

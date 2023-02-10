@@ -1,5 +1,4 @@
 use crate::shaders::Shader;
-use crate::vertex::Vertex;
 use crate::components::Component;
 
 use std::fs;
@@ -164,6 +163,7 @@ impl SpriteComponent {
                         },
                         None => (),
                     },
+                    _ => (),
                 }
             }
         ).for_each(drop);

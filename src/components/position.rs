@@ -1,19 +1,25 @@
 use crate::components::Component;
+use crate::vertex::Vertex;
 
 pub struct PositionComponent {
     pub position: (f32, f32),
     pub size: (f32, f32),
+    pub vertices: Vec<Vertex>,
+    pub indices: Vec<u16>,
 }
 
 impl PositionComponent {
     pub fn new(position: (f32, f32), size: (f32, f32)) -> Component {
         Component::Position(
             PositionComponent {
+                vertices: generate_vertices(position, size),
+                indices: generate_indices(),
                 position,
                 size,
             }
         )
     }
+
     pub fn from_xml(data: roxmltree::Node) -> Result<Component, ()> {
         let mut x = f32::NAN;
         let mut y = f32::NAN;
@@ -61,11 +67,46 @@ impl PositionComponent {
             return Err(());
         }
 
+        let position = (x, y);
+        let size = (width, height);
+
         Ok(Component::Position(
             PositionComponent {
-                position: (x, y),
-                size: (width, height),
+                vertices: generate_vertices(position, size),
+                indices: generate_indices(),
+                position,
+                size,
+
             }
         ))
     }
+}
+
+fn generate_vertices(position: (f32, f32), size: (f32, f32)) -> Vec<Vertex> {
+    vec!(
+        Vertex {
+            position: [position.0, position.1],
+            color: [0.0, 0.0, 0.0],
+            uv: [0.0, 0.0],
+        },
+        Vertex {
+            position: [position.0, position.1 + size.1],
+            color: [0.0, 0.0, 0.0],
+            uv: [0.0, 1.0],
+        },
+        Vertex {
+            position: [position.0 + size.0, position.1 + size.1],
+            color: [0.0, 0.0, 0.0],
+            uv: [1.0, 1.0],
+        },
+        Vertex {
+            position: [position.0 + size.0, position.1],
+            color: [0.0, 0.0, 0.0],
+            uv: [1.0, 0.0],
+        },
+    )
+}
+
+fn generate_indices() -> Vec<u16> {
+    vec!(0, 1, 2, 2, 3, 0)
 }

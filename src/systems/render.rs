@@ -1,9 +1,12 @@
 use crate::components::Component;
+use crate::components::position::PositionComponent;
+use crate::components::sprite::SpriteComponent;
 use crate::global::Global;
 use crate::entity::Entity;
 use crate::renderer::Renderer;
 use crate::shaders::Shader;
 use crate::systems::System;
+use crate::vertex::Vertex;
 
 use std::sync::{Arc, Mutex};
 use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
@@ -128,18 +131,20 @@ impl System for RenderSystem {
         for entity in entities {
             let unlocked_entity = entity.clone();
             let unlocked_entity = unlocked_entity.lock().expect("Could not acquire entity");
-            for component in unlocked_entity.components.iter() {
-                if let Component::Sprite(sprite) = component {
+            let components = &unlocked_entity.components;
 
-                    let vertices = Renderer::create_vertex_buffer(sprite.vertices.clone(), &self.renderer.device);
-                    let indices = CpuAccessibleBuffer::from_iter(self.renderer.device.clone(), BufferUsage::all(), false, sprite.indices.clone())
+            // Entities need a SpriteComponent and a PositionComponent in order to be drawn
+            if let Some(Component::Sprite(sprite)) = components.iter().find(|c| if let Component::Sprite(_) = c { true } else { false }) {
+                if let Some(Component::Position(position)) = components.iter().find(|c| if let Component::Position(_) = c { true } else { false }) {
+                    let vertices = Renderer::create_vertex_buffer(position.vertices.clone(), &self.renderer.device);
+                    let indices = CpuAccessibleBuffer::from_iter(self.renderer.device.clone(), BufferUsage::all(), false, position.indices.clone())
                         .expect("Failed to create buffer");
                     let pipeline = self.renderer.pipelines[&sprite.shader].clone();
 
                     builder
                         .bind_pipeline_graphics(pipeline.clone());
 
-                    if let (Shader::Texture, Some(s)) = (sprite.shader, &sprite.texture) {
+                    if let (Shader::Texture, Some(s)) = (&sprite.shader, &sprite.texture) {
                         let (texture, texture_future) = self.renderer.create_texture(s);
                         let layout = pipeline.layout().descriptor_set_layouts().get(0).unwrap();
                         let set = PersistentDescriptorSet::new(
@@ -166,8 +171,6 @@ impl System for RenderSystem {
                         .bind_index_buffer(indices.clone())
                         .draw_indexed(indices.len() as u32, vertices.len() as u32, 0, 0, 0)
                         .unwrap();
-
-                    break;
                 }
             }
         }

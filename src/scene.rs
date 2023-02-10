@@ -4,9 +4,6 @@ use crate::systems::System;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use miniserde;
-use miniserde::json;
-
 pub struct Scene {
     pub systems: Vec<Box<dyn System>>,
     pub entities: Vec<Arc<Mutex<Entity>>>,
