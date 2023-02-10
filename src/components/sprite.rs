@@ -104,44 +104,6 @@ impl SpriteComponent {
         )
     }
 
-    pub fn invisible(position: (f32, f32), size: (f32, f32)) -> Component {
-        let vertices = vec!(
-            Vertex {
-                position: [position.0, position.1],
-                color: [0.0, 0.0, 0.0],
-                uv: [0.0, 0.0],
-            },
-            Vertex {
-                position: [position.0, position.1 + size.1],
-                color: [0.0, 0.0, 0.0],
-                uv: [0.0, 1.0],
-            },
-            Vertex {
-                position: [position.0 + size.0, position.1 + size.1],
-                color: [0.0, 0.0, 0.0],
-                uv: [1.0, 1.0],
-            },
-            Vertex {
-                position: [position.0 + size.0, position.1],
-                color: [0.0, 0.0, 0.0],
-                uv: [1.0, 0.0],
-            },
-        );
-        let indices = vec!(0, 1, 2, 2, 3, 0);
-
-        Component::Sprite(
-            SpriteComponent {
-                position,
-                size,
-                vertices,
-                indices,
-                color: [0.0, 0.0, 0.0],
-                shader: Shader::Invisible,
-                texture: None,
-            }
-        )
-    }
-
     pub fn rainbow(position: (f32, f32), size: (f32, f32)) -> Component {
         let vertices = vec!(
             Vertex {

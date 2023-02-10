@@ -286,7 +286,6 @@ impl Renderer {
 
         let shaders = [
             shaders::Shader::Solid,
-            shaders::Shader::Invisible,
             shaders::Shader::Rainbow,
             shaders::Shader::Texture,
         ];

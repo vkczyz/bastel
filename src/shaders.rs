@@ -5,7 +5,6 @@ use vulkano::shader::ShaderModule;
 #[derive(Copy, Clone, Hash, PartialEq, Eq)]
 pub enum Shader {
     Solid,
-    Invisible,
     Rainbow,
     Texture,
 }
@@ -15,10 +14,6 @@ pub fn get_shaders(shader: &Shader, device: &Arc<Device>) -> Vec<Arc<ShaderModul
         Shader::Solid => vec!(
             vs_solid::load(device.clone()).expect("Failed to create shader module"),
             fs_solid::load(device.clone()).expect("Failed to create shader module"),
-        ),
-        Shader::Invisible => vec!(
-            vs_invisible::load(device.clone()).expect("Failed to create shader module"),
-            fs_invisible::load(device.clone()).expect("Failed to create shader module"),
         ),
         Shader::Rainbow => vec!(
             vs_rainbow::load(device.clone()).expect("Failed to create shader module"),
@@ -42,20 +37,6 @@ pub mod fs_solid {
     vulkano_shaders::shader!{
         ty: "fragment",
         path: "shaders/solid.frag",
-    }
-}
-
-pub mod vs_invisible {
-    vulkano_shaders::shader!{
-        ty: "vertex",
-        path: "shaders/invisible.vert",
-    }
-}
-
-pub mod fs_invisible {
-    vulkano_shaders::shader!{
-        ty: "fragment",
-        path: "shaders/invisible.frag",
     }
 }
 
