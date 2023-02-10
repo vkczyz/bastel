@@ -6,6 +6,7 @@ use crate::scene::Scene;
 use crate::systems::audio::AudioSystem;
 use crate::systems::render::RenderSystem;
 
+use std::path::Path;
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use winit::event::{Event, WindowEvent};
@@ -37,9 +38,6 @@ impl Engine {
     }
 
     pub fn run(mut self, event_loop: EventLoop<()>) {
-        self.scene.add_entity(Entity::new(43, vec![
-            components::audio::AudioComponent::new(),
-        ]));
         self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
         self.scene.add_system(Box::new(AudioSystem::new(self.global.clone())));
 

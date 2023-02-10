@@ -1,5 +1,6 @@
 use crate::shaders::Shader;
 use crate::vertex::Vertex;
+use crate::components::Component;
 
 use std::fs;
 use std::path::Path;
@@ -18,7 +19,7 @@ pub struct SpriteComponent {
 }
 
 impl SpriteComponent {
-    pub fn with_color(position: (f32, f32), size: (f32, f32), color: [f32; 3]) -> Self {
+    pub fn with_color(position: (f32, f32), size: (f32, f32), color: [f32; 3]) -> Component {
         let vertices = vec!(
             Vertex {
                 position: [position.0, position.1],
@@ -43,18 +44,20 @@ impl SpriteComponent {
         );
         let indices = vec!(0, 1, 2, 2, 3, 0);
 
-        SpriteComponent {
-            position,
-            size,
-            vertices,
-            indices,
-            color,
-            shader: Shader::Solid,
-            texture: None,
-        }
+        Component::Sprite(
+            SpriteComponent {
+                position,
+                size,
+                vertices,
+                indices,
+                color,
+                shader: Shader::Solid,
+                texture: None,
+            }
+        )
     }
 
-    pub fn with_texture(position: (f32, f32), size: (f32, f32), texture_path: &Path) -> Self {
+    pub fn with_texture(position: (f32, f32), size: (f32, f32), texture_path: &Path) -> Component {
         let color = [0.0, 0.0, 0.0];
         let vertices = vec!(
             Vertex {
@@ -88,18 +91,20 @@ impl SpriteComponent {
             },
         };
 
-        SpriteComponent {
-            position,
-            size,
-            vertices,
-            indices,
-            color,
-            shader,
-            texture,
-        }
+        Component::Sprite(
+            SpriteComponent {
+                position,
+                size,
+                vertices,
+                indices,
+                color,
+                shader,
+                texture,
+            }
+        )
     }
 
-    pub fn invisible(position: (f32, f32), size: (f32, f32)) -> Self {
+    pub fn invisible(position: (f32, f32), size: (f32, f32)) -> Component {
         let vertices = vec!(
             Vertex {
                 position: [position.0, position.1],
@@ -124,18 +129,20 @@ impl SpriteComponent {
         );
         let indices = vec!(0, 1, 2, 2, 3, 0);
 
-        SpriteComponent {
-            position,
-            size,
-            vertices,
-            indices,
-            color: [0.0, 0.0, 0.0],
-            shader: Shader::Invisible,
-            texture: None,
-        }
+        Component::Sprite(
+            SpriteComponent {
+                position,
+                size,
+                vertices,
+                indices,
+                color: [0.0, 0.0, 0.0],
+                shader: Shader::Invisible,
+                texture: None,
+            }
+        )
     }
 
-    pub fn rainbow(position: (f32, f32), size: (f32, f32)) -> Self {
+    pub fn rainbow(position: (f32, f32), size: (f32, f32)) -> Component {
         let vertices = vec!(
             Vertex {
                 position: [position.0, position.1],
@@ -160,17 +167,20 @@ impl SpriteComponent {
         );
         let indices = vec!(0, 1, 2, 2, 3, 0);
 
-        SpriteComponent {
-            position,
-            size,
-            vertices,
-            indices,
-            color: [0.0, 0.0, 0.0],
-            shader: Shader::Rainbow,
-            texture: None,
-        }
+        Component::Sprite(
+            SpriteComponent {
+                position,
+                size,
+                vertices,
+                indices,
+                color: [0.0, 0.0, 0.0],
+                shader: Shader::Rainbow,
+                texture: None,
+            }
+        )
     }
 
+    /*
     #[cfg(feature = "json")]
     pub fn from_json(data: &json::Value) -> Result<Self, &str> {
         let data = match data {
@@ -290,4 +300,5 @@ impl SpriteComponent {
     pub fn get_bottom_pos(&self) -> f32 {
         self.position.1 + self.size.1
     }
+    */
 }
