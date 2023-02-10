@@ -1,4 +1,5 @@
 use crate::components::Component;
+use roxmltree;
 
 #[allow(dead_code)]
 pub struct AudioComponent {
@@ -13,6 +14,29 @@ impl AudioComponent {
             AudioComponent {
                 muted: false,
                 bgm: None,
+                sfx: None,
+            }
+        )
+    }
+
+    pub fn from_xml(data: roxmltree::Node) -> Component {
+        let mut muted = false;
+        let mut bgm = None;
+
+        data.attributes()
+            .map(|a| {
+                match a.name() {
+                    "muted" => muted = true,
+                    "bgm" => bgm = Some(String::from(a.value())),
+                    _ => (),
+                }
+            }
+        ).for_each(drop);
+
+        Component::Audio(
+            AudioComponent {
+                muted,
+                bgm,
                 sfx: None,
             }
         )

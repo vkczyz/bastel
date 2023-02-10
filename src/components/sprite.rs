@@ -1,24 +1,18 @@
 use crate::shaders::Shader;
-use crate::vertex::Vertex;
 use crate::components::Component;
 
 use std::fs;
+use std::num::ParseIntError;
 use std::path::Path;
 
-use miniserde;
-use miniserde::json;
-
 pub struct SpriteComponent {
-    pub position: (f32, f32),
-    pub size: (f32, f32),
-    pub vertices: Vec<Vertex>,
-    pub indices: Vec<u16>,
-    pub color: [f32; 3],
     pub shader: Shader,
+    pub color: [f32; 3],
     pub texture: Option<Vec<u8>>,
 }
 
 impl SpriteComponent {
+    /*
     pub fn with_color(position: (f32, f32), size: (f32, f32), color: [f32; 3]) -> Component {
         let vertices = vec!(
             Vertex {
@@ -141,86 +135,42 @@ impl SpriteComponent {
             }
         )
     }
+    */
 
-    /*
-    #[cfg(feature = "json")]
-    pub fn from_json(data: &json::Value) -> Result<Self, &str> {
-        let data = match data {
-            json::Value::Object(o) => o,
-            _ => return Err("Malformed JSON data: expected object"),
-        };
-        
-        let position = match data.get("position") {
-            Some(json::Value::Array(a)) => a.iter()
-                .map(|n| match n {
-                    json::Value::Number(json::Number::F64(i)) => Ok(*i as f32),
-                    _ => Err("Malformed JSON data: expected float"),
-                })
-                .collect::<Result<Vec<f32>, &str>>(),
-            _ => return Err("Malformed JSON data: expected array"),
-        }?;
+    pub fn from_xml(data: roxmltree::Node) -> Component {
+        let mut shader = Shader::Rainbow;
+        let mut color = "#000000";
+        let mut texture = None;
 
-        let size = match data.get("size") {
-            Some(json::Value::Array(a)) => a.iter()
-                .map(|n| match n {
-                    json::Value::Number(json::Number::F64(i)) => Ok(*i as f32),
-                    _ => Err("Malformed JSON data: expected number"),
-                })
-                .collect::<Result<Vec<f32>, &str>>(),
-            _ => return Err("Malformed JSON data: expected array"),
-        }?;
-
-        match data.get("shader") {
-            Some(json::Value::String(s)) => {
-                match s.as_str() {
-                    "solid" => {
-                        let color = match data.get("color") {
-                            Some(json::Value::Array(a)) => a.iter()
-                                .map(|n| match n {
-                                    json::Value::Number(json::Number::F64(i)) => Ok(*i as f32),
-                                    _ => Err("Malformed JSON data: expected number"),
-                                })
-                                .collect::<Result<Vec<f32>, &str>>(),
-                            _ => Err("Malformed JSON data: expected array"),
-                        }?;
-
-                        Ok(SpriteComponent::with_color(
-                            (position[0], position[1]),
-                            (size[0], size[1]),
-                            [color[0], color[1], color[2]],
-                        ))
+        data.attributes()
+            .map(|a| {
+                match a.name() {
+                    "shader" => match a.value() {
+                        "solid" => shader = Shader::Solid,
+                        "texture" => shader = Shader::Texture,
+                        "rainbow" => {println!("a rainbow has appeared!"); shader = Shader::Rainbow},
+                        _ => shader = Shader::Rainbow,
                     },
-                    "invisible" => {
-                        Ok(SpriteComponent::invisible(
-                            (position[0], position[1]),
-                            (size[0], size[1]),
-                        ))
-                    },
-                    "rainbow" => {
-                        Ok(SpriteComponent::rainbow(
-                            (position[0], position[1]),
-                            (size[0], size[1]),
-                        ))
-                    },
-                    "texture" => {
-                        let texture = match data.get("texture") {
-                            Some(json::Value::String(s)) => s,
-                            _ => return Err("Malformed JSON data: expected string"),
-                        };
-
-                        Ok(SpriteComponent::with_texture(
-                            (position[0], position[1]),
-                            (size[0], size[1]),
-                            Path::new(texture),
-                        ))
-                    },
-                    _ => return Err("Malformed JSON data: unknown shader type"),
+                    "color" => color = a.value(),
+                    "texture" => texture = fs::read(Path::new(a.value())).ok(),
+                    _ => (),
                 }
-            },
-            _ => Err("Malformed JSON data: expected valid shader")
-        }
+            }
+        ).for_each(drop);
+
+        let color = decode_hex(color).unwrap_or(vec![0.0, 0.0, 0.0]);
+        let color = [color[0], color[1], color[2]];
+
+        Component::Sprite(
+            SpriteComponent {
+                shader,
+                color,
+                texture,
+            }
+        )
     }
 
+    /*
     pub fn change_position(&mut self, pos: (f32, f32)) {
         self.position = pos;
         self.vertices = vec!(
@@ -263,4 +213,14 @@ impl SpriteComponent {
         self.position.1 + self.size.1
     }
     */
+}
+
+fn decode_hex(s: &str) -> Result<Vec<f32>, ParseIntError> {
+    (1..s.len())
+        .step_by(2)
+        .map(|i| match u8::from_str_radix(&s[i..i + 2], 16) {
+            Ok(n) => Ok(n as f32),
+            Err(e) => Err(e),
+        })
+        .collect()
 }
