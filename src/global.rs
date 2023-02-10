@@ -10,13 +10,15 @@ pub struct Global {
 }
 
 impl Global {
-    pub fn new(title: String, window_size: (u32, u32)) -> Self {
-        Global {
+    pub fn new(title: String, window_size: (u32, u32)) -> Arc<Mutex<Self>> {
+        Arc::new(Mutex::new(
+            Global {
             title,
             window_size,
             view_size: window_size,
             entity_map: HashMap::new(),
             signals: HashMap::new(),
-        }
+            }
+        ))
     }
 }
