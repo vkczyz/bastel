@@ -1,12 +1,11 @@
-use std::sync::Arc;
-use std::sync::Mutex;
-
 use crate::components::Component;
+use crate::global::Global;
 use crate::entity::Entity;
 use crate::renderer::Renderer;
 use crate::shaders::Shader;
 use crate::systems::System;
 
+use std::sync::{Arc, Mutex};
 use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, SubpassContents};
 use vulkano::descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet};
@@ -15,30 +14,33 @@ use vulkano::sync;
 use vulkano::sync::{GpuFuture, FlushError};
 
 pub struct RenderSystem {
-    pub recreate_swapchain: bool,
-    pub previous_frame_end: Option<Box<dyn GpuFuture>>,
     pub renderer: Renderer,
+    pub global: Arc<Mutex<Global>>,
+    previous_frame_end: Option<Box<dyn GpuFuture>>,
+    recreate_swapchain: bool,
 }
 
 impl RenderSystem {
-    pub fn new(renderer: Renderer) -> Self {
+    pub fn new(renderer: Renderer, global: Arc<Mutex<Global>>) -> Self {
         RenderSystem {
-            recreate_swapchain: false,
             previous_frame_end: Some(sync::now(renderer.device.clone()).boxed()),
+            recreate_swapchain: false,
             renderer,
+            global,
         }
     }
 
-    /*
-    pub fn resize() {
-        self.window_size.0 = size.width;
-        self.window_size.1 = size.height;
-        
-        let x = self.window_size.0 as f32;
-        let y = self.window_size.1 as f32;
+    pub fn resize(&mut self) {
+        let gg = self.global.clone();
+        let g = gg.lock().expect("Could not unlock global object");
+        let window_size = g.window_size;
+        let view_size = g.view_size;
 
-        let res_ratio = self.view_size.0 as f32 / self.view_size.1 as f32;
-        let win_ratio = self.window_size.0 as f32 / self.window_size.1 as f32;
+        let x = window_size.0 as f32;
+        let y = window_size.1 as f32;
+
+        let res_ratio = view_size.0 as f32 / view_size.1 as f32;
+        let win_ratio = window_size.0 as f32 / window_size.1 as f32;
 
         if win_ratio > res_ratio {
             let vx = y * res_ratio;
@@ -61,40 +63,43 @@ impl RenderSystem {
         }
 
         self.renderer.recreate_pipelines().unwrap();
-        recreate_swapchain = true
+        self.recreate_swapchain = true
     }
-    */
 }
 
 impl System for RenderSystem {
     fn run(&mut self, entities: &mut [Arc<Mutex<Entity>>]) {
-        // Convert FPS to redraw frequency
+        self.recreate_swapchain = false;
+        self.previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
 
-        let mut recreate_swapchain = false;
-        let mut previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
-
+        let gg = self.global.clone();
+        let mut g = gg.lock().expect("Could not unlock global object");
+        if let Some(true) = g.signals.get("resize") {
+            self.resize();
+            g.signals.insert("resize".to_string(), false);
+        }
         //self.update_position(&input_handler, entity_index);
 
-        previous_frame_end.as_mut().unwrap().cleanup_finished();
+        self.previous_frame_end.as_mut().unwrap().cleanup_finished();
 
-        if recreate_swapchain {
+        if self.recreate_swapchain {
             if let Err(_) = self.renderer.recreate_swapchain() {
                 return;
             }
-            recreate_swapchain = false;
+            self.recreate_swapchain = false;
         }
 
         let (image_num, suboptimal, acquire_future) =
             match self.renderer.acquire_next_image() {
                 Ok(d) => d,
                 Err(_) => {
-                    recreate_swapchain = true;
+                    self.recreate_swapchain = true;
                     return;
                 }
             };
 
         if suboptimal {
-            recreate_swapchain = true;
+            self.recreate_swapchain = true;
         }
 
         let clear_values = vec![[0.0, 0.0, 0.0].into()];
@@ -141,7 +146,7 @@ impl System for RenderSystem {
                             )],
                         ).unwrap();
 
-                        previous_frame_end = Some(texture_future.boxed());
+                        self.previous_frame_end = Some(texture_future.boxed());
 
                         builder.bind_descriptor_sets(
                             PipelineBindPoint::Graphics,
@@ -168,7 +173,7 @@ impl System for RenderSystem {
 
         let command_buffer = builder.build().unwrap();
 
-        let future = previous_frame_end
+        let future = self.previous_frame_end
             .take()
             .unwrap()
             .join(acquire_future)
@@ -179,15 +184,15 @@ impl System for RenderSystem {
 
         match future {
             Ok(future) => {
-                previous_frame_end = Some(future.boxed());
+                self.previous_frame_end = Some(future.boxed());
             },
             Err(FlushError::OutOfDate) => {
-                recreate_swapchain = true;
-                previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
+                self.recreate_swapchain = true;
+                self.previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
             },
             Err(e) => {
                 println!("Failed to flush future: {:?}", e);
-                previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
+                self.previous_frame_end = Some(sync::now(self.renderer.device.clone()).boxed());
             }
         }
     }

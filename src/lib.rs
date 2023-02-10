@@ -1,6 +1,7 @@
 pub mod engine;
-pub mod entity;
+pub mod global;
 pub mod scene;
+pub mod entity;
 pub mod components;
 pub mod systems;
 mod renderer;

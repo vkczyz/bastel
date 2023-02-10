@@ -1,21 +1,17 @@
-use crate::entity::{Entity, Axis, Edge};
+use crate::global::Global;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
-
-use crate::components::Component;
 use crate::systems::render::RenderSystem;
 
 use std::time::{Duration, Instant};
-
+use std::sync::{Arc, Mutex};
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 
 pub struct Engine {
-    pub title: String,
-    pub window_size: (u32, u32),
-    pub view_size: (u32, u32),
-    pub fps: u64,
+    pub global: Arc<Mutex<Global>>,
     pub scene: Scene,
+    pub fps: u64,
     renderer: Renderer,
 }
 
@@ -24,20 +20,23 @@ impl Engine {
         let (renderer, event_loop) = Renderer::init(title, width, height);
         let fps = 60;
 
+        let global = Arc::new(Mutex::new(
+            Global::new(
+                title.to_string(),
+                (width, height),
+            )
+        ));
+
         (Engine {
-            title: String::from(title),
-            window_size: (width, height),
-            view_size: (width, height),
+            global,
+            scene: Scene::new(vec![]),
             fps,
             renderer,
-            scene: Scene::new(
-                vec![],
-            ),
         }, event_loop)
     }
 
     pub fn run(mut self, event_loop: EventLoop<()>) {
-        self.scene.add_system(Box::new(RenderSystem::new(self.renderer)));
+        self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
 
         let freq_millis = 1000 / self.fps;
 
@@ -56,7 +55,10 @@ impl Engine {
                     event: WindowEvent::Resized(size),
                     ..
                 } => {
-                    // Resizing
+                    let gg = self.global.clone();
+                    let mut g = gg.lock().expect("Could not unlock global object");
+                    g.window_size = (size.width, size.height);
+                    g.signals.insert("resize".to_string(), true);
                 },
 
                 Event::WindowEvent {
@@ -126,13 +128,13 @@ impl Engine {
     pub add_system(scene: &mut Scene, system: System) -> &mut Entity
     */
 
+    /*
     fn update_position(&mut self, input: &Component, entity_index: usize) {
         let units = (
             1.0 / self.view_size.0 as f32,
             1.0 / self.view_size.1 as f32,
         );
 
-        /*
         // Apply scene forces
         let player = &mut self.scene.entities[entity_index];
         let global = self.scene.force;
@@ -233,6 +235,6 @@ impl Engine {
         player.sprite.change_position(pos);
 
         player.physics.reset();
-        */
     }
+    */
 }
