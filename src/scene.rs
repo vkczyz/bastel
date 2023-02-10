@@ -25,34 +25,24 @@ impl Scene {
         self.systems.push(system);
     }
 
-    /*
-    #[cfg(feature = "json")]
-    pub fn from_json(data: &json::Value) -> Result<Self, &str> {
-        let data = match data {
-            json::Value::Object(o) => o,
-            _ => return Err("Malformed JSON data: expected object"),
-        };
+    pub fn from_xml(data: &str) -> Self {
+        let data = roxmltree::Document::parse(data).expect("Could not parse scene XML");
 
-        let force = match data.get("force") {
-            Some(json::Value::Array(a)) => a.iter()
-                .map(|n| match n {
-                    json::Value::Number(json::Number::F64(i)) => Ok(*i as f32),
-                    _ => Err("Malformed JSON data: expected float"),
-                })
-                .collect::<Result<Vec<f32>, &str>>(),
-            _ => Ok(vec![0.0, 0.0]),
-        }?;
-        let force = (force[0], force[1]);
+        let mut entities = vec![];
 
-        Ok(Scene {
-            entities: match data.get("entities") {
-                Some(json::Value::Array(a)) => a.iter()
-                    .map(|e| Entity::from_json(e))
-                    .collect::<Result<Vec<Entity>, &str>>()?,
-                _ => return Err("Malformed JSON data: expected array"),
-            },
+        data.root_element().children()
+            .filter(|n| n.is_element())
+            .map(|n| {
+                match n.tag_name().name() {
+                    "entity" => entities.push(Entity::from_xml(n)),
+                    _ => (),
+                }
+            }
+        ).for_each(drop);
+
+        Scene {
             systems: vec![],
-        })
+            entities,
+        }
     }
-    */
 }
