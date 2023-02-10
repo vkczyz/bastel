@@ -1,8 +1,12 @@
+use crate::components;
+use crate::entity::Entity;
 use crate::global::Global;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
+use crate::systems::audio::AudioSystem;
 use crate::systems::render::RenderSystem;
 
+use std::path::Path;
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use winit::event::{Event, WindowEvent};
@@ -35,6 +39,7 @@ impl Engine {
 
     pub fn run(mut self, event_loop: EventLoop<()>) {
         self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
+        self.scene.add_system(Box::new(AudioSystem::new(self.global.clone())));
 
         let freq_millis = 1000 / self.fps;
 
@@ -53,10 +58,10 @@ impl Engine {
                     event: WindowEvent::Resized(size),
                     ..
                 } => {
-                    let gg = self.global.clone();
-                    let mut g = gg.lock().expect("Could not unlock global object");
-                    g.window_size = (size.width, size.height);
-                    g.signals.insert("resize".to_string(), true);
+                    let global = self.global.clone();
+                    let mut global = global.lock().expect("Could not unlock global object");
+                    global.window_size = (size.width, size.height);
+                    global.signals.insert("resize".to_string(), true);
                 },
 
                 Event::WindowEvent {

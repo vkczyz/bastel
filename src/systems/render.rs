@@ -14,8 +14,8 @@ use vulkano::sync;
 use vulkano::sync::{GpuFuture, FlushError};
 
 pub struct RenderSystem {
-    pub renderer: Renderer,
-    pub global: Arc<Mutex<Global>>,
+    renderer: Renderer,
+    global: Arc<Mutex<Global>>,
     previous_frame_end: Option<Box<dyn GpuFuture>>,
     recreate_swapchain: bool,
 }
@@ -31,10 +31,10 @@ impl RenderSystem {
     }
 
     pub fn resize(&mut self) {
-        let gg = self.global.clone();
-        let g = gg.lock().expect("Could not unlock global object");
-        let window_size = g.window_size;
-        let view_size = g.view_size;
+        let global = self.global.clone();
+        let global = global.lock().expect("Could not unlock global object");
+        let window_size = global.window_size;
+        let view_size = global.view_size;
 
         let x = window_size.0 as f32;
         let y = window_size.1 as f32;
@@ -74,11 +74,11 @@ impl System for RenderSystem {
 
         let mut resize = false;
         {
-            let gg = self.global.clone();
-            let mut g = gg.lock().expect("Could not unlock global object");
-            if let Some(true) = g.signals.get("resize") {
+            let global = self.global.clone();
+            let mut global = global.lock().expect("Could not unlock global object");
+            if let Some(true) = global.signals.get("resize") {
                 resize = true;
-                g.signals.insert("resize".to_string(), false);
+                global.signals.insert("resize".to_string(), false);
             }
         }
 
