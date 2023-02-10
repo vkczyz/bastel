@@ -55,10 +55,10 @@ impl Engine {
                     event: WindowEvent::Resized(size),
                     ..
                 } => {
-                    let gg = self.global.clone();
-                    let mut g = gg.lock().expect("Could not unlock global object");
-                    g.window_size = (size.width, size.height);
-                    g.signals.insert("resize".to_string(), true);
+                    let global = self.global.clone();
+                    let mut global = global.lock().expect("Could not unlock global object");
+                    global.window_size = (size.width, size.height);
+                    global.signals.insert("resize".to_string(), true);
                 },
 
                 Event::WindowEvent {

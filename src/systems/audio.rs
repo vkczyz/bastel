@@ -22,9 +22,11 @@ impl AudioSystem {
         let (bgm_stream, bgm_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&bgm_handle).expect("Could not create audio sink"); 
 
-        let gg = global.clone();
-        let mut g = gg.lock().expect("Could not unlock global object");
-        g.signals.insert("play_bgm".to_string(), true);
+        {
+            let global = global.clone();
+            let mut global = global.lock().expect("Could not unlock global object");
+            global.signals.insert("play_bgm".to_string(), true);
+        }
 
         AudioSystem {
             bgm: sink,
@@ -78,17 +80,17 @@ impl System for AudioSystem {
         let mut play_sfx = false;
 
         {
-            let gg = self.global.clone();
-            let mut g = gg.lock().expect("Could not unlock global object");
+            let global = self.global.clone();
+            let mut global = global.lock().expect("Could not unlock global object");
 
-            if let Some(true) = g.signals.get("play_bgm") {
+            if let Some(true) = global.signals.get("play_bgm") {
                 play_bgm = true;
-                g.signals.insert("play_bgm".to_string(), false);
+                global.signals.insert("play_bgm".to_string(), false);
             }
 
-            if let Some(true) = g.signals.get("play_sfx") {
+            if let Some(true) = global.signals.get("play_sfx") {
                 play_sfx = true;
-                g.signals.insert("play_sfx".to_string(), false);
+                global.signals.insert("play_sfx".to_string(), false);
             }
         }
 
