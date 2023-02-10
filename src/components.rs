@@ -3,6 +3,7 @@ pub mod collision;
 pub mod input;
 pub mod moveable;
 pub mod physics;
+pub mod position;
 pub mod sprite;
 
 use crate::components::{
@@ -11,6 +12,7 @@ use crate::components::{
     input::InputComponent,
     moveable::MoveableComponent,
     physics::PhysicsComponent,
+    position::PositionComponent,
     sprite::SpriteComponent,
 };
 
@@ -20,5 +22,6 @@ pub enum Component {
     Input(InputComponent),
     Moveable(MoveableComponent),
     Physics(PhysicsComponent),
+    Position(PositionComponent),
     Sprite(SpriteComponent),
 }
