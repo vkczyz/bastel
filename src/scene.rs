@@ -1,7 +1,6 @@
 use crate::entity::Entity;
 use crate::systems::System;
 
-use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 pub struct Scene {

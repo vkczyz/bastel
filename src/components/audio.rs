@@ -23,15 +23,11 @@ impl AudioComponent {
         let mut muted = false;
         let mut bgm = None;
 
-        data.children()
-            .filter(|n| n.is_element())
-            .map(|n| {
-                match n.tag_name().name() {
+        data.attributes()
+            .map(|a| {
+                match a.name() {
                     "muted" => muted = true,
-                    "bgm" => match n.attribute("bgm") {
-                        Some(b) => bgm = Some(String::from(b)),
-                        _ => (),
-                    },
+                    "bgm" => bgm = Some(String::from(a.value())),
                     _ => (),
                 }
             }

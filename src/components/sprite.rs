@@ -142,32 +142,23 @@ impl SpriteComponent {
         let mut color = "#000000";
         let mut texture = None;
 
-        data.children()
-            .filter(|n| n.is_element())
-            .map(|n| {
-                match n.tag_name().name() {
-                    "shader" => match n.attribute("shader") {
-                        Some("solid") => shader = Shader::Solid,
-                        Some("texture") => shader = Shader::Texture,
-                        Some("rainbow") => shader = Shader::Rainbow,
-                        _ => (),
+        data.attributes()
+            .map(|a| {
+                match a.name() {
+                    "shader" => match a.value() {
+                        "solid" => shader = Shader::Solid,
+                        "texture" => shader = Shader::Texture,
+                        "rainbow" => {println!("a rainbow has appeared!"); shader = Shader::Rainbow},
+                        _ => shader = Shader::Rainbow,
                     },
-                    "color" => match n.attribute("color") {
-                        Some(c) => color = c,
-                        None => (),
-                    },
-                    "texture" => match n.attribute("texture") {
-                        Some(t) => texture = match fs::read(Path::new(t)) {
-                            Ok(t) => Some(t),
-                            Err(_) => None,
-                        },
-                        None => (),
-                    },
+                    "color" => color = a.value(),
+                    "texture" => texture = fs::read(Path::new(a.value())).ok(),
                     _ => (),
                 }
             }
         ).for_each(drop);
 
+        println!("color");
         let color = decode_hex(color).unwrap_or(vec![0.0, 0.0, 0.0]);
         let color = [color[0], color[1], color[2]];
 

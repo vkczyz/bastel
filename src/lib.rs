@@ -11,8 +11,8 @@ mod vertex;
 use engine::Engine;
 use scene::Scene;
 
-use std::fs;
 use std::ffi::CStr;
+use std::fs;
 use std::os::raw::c_char;
 
 #[no_mangle]
@@ -40,18 +40,9 @@ pub extern "C" fn init_with_scene(title: *const c_char, width: u32, height: u32,
             .to_str()
             .expect("Failed to decode title")
     };
+    let scene = fs::read_to_string(scene).expect("Failed to find scene file");
+    let scene = Scene::from_xml(&scene);
 
-    /*
-    let scene: json::Value = json::from_str(
-        fs::read_to_string(scene)
-        .unwrap()
-        .as_str()
-    ).unwrap();
-
-    let scene = Scene::from_json(&scene).unwrap();
-    */
-
-    let scene = Scene::new(vec![]);
     let (mut engine, event_loop) = Engine::new(title, width, height);
     engine.scene = scene;
 

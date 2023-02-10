@@ -38,7 +38,7 @@ impl Entity {
 
                 match n.tag_name().name() {
                     "audio" => components.push(AudioComponent::from_xml(n)),
-                    "position" => components.push(PositionComponent::from_xml(n).unwrap()),
+                    "position" => components.push(PositionComponent::from_xml(n)),
                     "sprite" => components.push(SpriteComponent::from_xml(n)),
                     _ => (),
                 }

@@ -20,65 +20,47 @@ impl PositionComponent {
         )
     }
 
-    pub fn from_xml(data: roxmltree::Node) -> Result<Component, ()> {
+    pub fn from_xml(data: roxmltree::Node) -> Component {
         let mut x = f32::NAN;
         let mut y = f32::NAN;
         let mut width = f32::NAN;
         let mut height = f32::NAN;
 
-        data.children()
-            .filter(|n| n.is_element())
-            .map(|n| {
-                match n.tag_name().name() {
-                    "x" => match n.attribute("x") {
-                        Some(n) => match n.parse::<f32>() {
-                            Ok(n) => x = n,
-                            Err(_) => (),
-                        },
-                        None => (),
+        data.attributes()
+            .map(|a| {
+                match a.name() {
+                    "x" => match a.value().parse::<f32>() {
+                        Ok(d) => x = d,
+                        Err(_) => (),
                     },
-                    "y" => match n.attribute("y") {
-                        Some(n) => match n.parse::<f32>() {
-                            Ok(n) => y = n,
-                            Err(_) => (),
-                        },
-                        None => (),
+                    "y" => match a.value().parse::<f32>() {
+                        Ok(d) => y = d,
+                        Err(_) => (),
                     },
-                    "width" => match n.attribute("width") {
-                        Some(n) => match n.parse::<f32>() {
-                            Ok(n) => width = n,
-                            Err(_) => (),
-                        },
-                        None => (),
+                    "width" => match a.value().parse::<f32>() {
+                        Ok(d) => width = d,
+                        Err(_) => (),
                     },
-                    "height" => match n.attribute("height") {
-                        Some(n) => match n.parse::<f32>() {
-                            Ok(n) => height = n,
-                            Err(_) => (),
-                        },
-                        None => (),
+                    "height" => match a.value().parse::<f32>() {
+                        Ok(d) => height = d,
+                        Err(_) => (),
                     },
                     _ => (),
                 }
             }
         ).for_each(drop);
 
-        if x.is_nan() || y.is_nan() || width.is_nan() || height.is_nan() {
-            return Err(());
-        }
-
         let position = (x, y);
         let size = (width, height);
 
-        Ok(Component::Position(
+        Component::Position(
             PositionComponent {
                 vertices: generate_vertices(position, size),
                 indices: generate_indices(),
                 position,
                 size,
-
             }
-        ))
+        )
     }
 }
 
