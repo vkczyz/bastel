@@ -1,6 +1,15 @@
+use crate::global::Global;
+use crate::entity::Entity;
+use crate::systems::System;
+use std::sync::{Arc, Mutex};
+
 pub struct PhysicsSystem { }
 
 impl PhysicsSystem {
+    pub fn new(global: Arc<Mutex<Global>>) -> Self {
+        PhysicsSystem { }
+    }
+
     /*
     pub fn update(&mut self) {
         self.velocity.0 += self.acceleration.0;
@@ -41,4 +50,10 @@ impl PhysicsSystem {
         self.acceleration = (0.0, 0.0);
     }
     */
+}
+
+impl System for PhysicsSystem {
+    fn run(&mut self, entities: &mut [Arc<Mutex<Entity>>]) {
+
+    }
 }

@@ -1,6 +1,7 @@
 use crate::global::Global;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
+use crate::systems::input::InputSystem;
 use crate::systems::audio::AudioSystem;
 use crate::systems::render::RenderSystem;
 
@@ -13,32 +14,36 @@ pub struct Engine {
     pub global: Arc<Mutex<Global>>,
     pub scene: Scene,
     pub fps: u64,
+    input: InputSystem,
     renderer: Renderer,
 }
 
 impl Engine {
     pub fn new(title: &str, width: u32, height: u32) -> (Self, EventLoop<()>) {
-        let (renderer, event_loop) = Renderer::init(title, width, height);
-        let fps = 60;
-
         let global = Global::new(
             title.to_string(),
             (width, height),
         );
 
+        let (renderer, event_loop) = Renderer::init(title, width, height);
+        let input = InputSystem::new(global.clone());
+        let fps = 60;
+
         (Engine {
             global,
             scene: Scene::new(vec![]),
             fps,
+            input,
             renderer,
         }, event_loop)
     }
 
     pub fn run(mut self, event_loop: EventLoop<()>) {
+        let freq_millis = 1000 / self.fps;
+
+        self.scene.add_system(Box::new(InputSystem::new(self.global.clone())));
         self.scene.add_system(Box::new(AudioSystem::new(self.global.clone())));
         self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
-
-        let freq_millis = 1000 / self.fps;
 
         event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::WaitUntil(
@@ -68,7 +73,7 @@ impl Engine {
                     },
                     ..
                 } => {
-                    //input_handler.handle_input(input);
+                    self.input.handle_input(input);
                 }
 
                 Event::WindowEvent {
@@ -78,11 +83,13 @@ impl Engine {
                     },
                     ..
                 } => {
-                    /*
-                    if input_handler.is_valid_cursor_position() {
-                        println!("({}, {})", input_handler.cursor[0], input_handler.cursor[1]);
+                    let global = self.global.clone();
+                    let mut global = global.lock().expect("Could not unlock global object");
+                    global.signals.insert("mouse_click".to_string(), true);
+
+                    if self.input.is_valid_cursor_position() {
+                        println!("({}, {})", self.input.cursor[0], self.input.cursor[1]);
                     }
-                    */
                 },
 
                 Event::WindowEvent {
@@ -92,11 +99,20 @@ impl Engine {
                     },
                     ..
                 } => {
-                    /*
-                    let real_dims: [f32; 2] = self.renderer.viewport.dimensions.into();
+                    let dims: (u32, u32);
+                    let origin: (u32, u32);
+
+                    {
+                        let global = self.global.clone();
+                        let global = global.lock().expect("Could not unlock global object");
+                        dims = global.view_size;
+                        origin = global.view_origin;
+                    }
+
+                    let real_dims: [f32; 2] = [dims.0 as f32, dims.1 as f32];
                     let view_dims: [f32; 2] = [
-                        real_dims[0] - 2.0 * self.renderer.viewport.origin[0],
-                        real_dims[1] - 2.0 * self.renderer.viewport.origin[1],
+                        real_dims[0] - 2.0 * origin.0 as f32,
+                        real_dims[1] - 2.0 * origin.1 as f32,
                     ];
 
                     let mut pos: [f32; 2] = position.into();
@@ -107,8 +123,8 @@ impl Engine {
                     pos[0] *= real_dims[0] / view_dims[0];
                     pos[1] *= real_dims[1] / view_dims[1];
 
-                    input_handler.cursor = pos;
-                    */
+                    self.input.cursor = pos;
+                    println!("{}, {}", pos[0], pos[1]);
                 }
 
                 Event::RedrawEventsCleared => {
