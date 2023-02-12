@@ -1,12 +1,9 @@
 use crate::components::Component;
-use crate::components::position::PositionComponent;
-use crate::components::sprite::SpriteComponent;
 use crate::global::Global;
 use crate::entity::Entity;
 use crate::renderer::Renderer;
 use crate::shaders::Shader;
 use crate::systems::System;
-use crate::vertex::Vertex;
 
 use std::sync::{Arc, Mutex};
 use vulkano::buffer::{TypedBufferAccess, CpuAccessibleBuffer, BufferUsage};
@@ -33,7 +30,7 @@ impl RenderSystem {
         }
     }
 
-    pub fn resize(&mut self) {
+    fn resize(&mut self) {
         let global = self.global.clone();
         let global = global.lock().expect("Could not unlock global object");
         let window_size = global.window_size;

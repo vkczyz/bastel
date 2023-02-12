@@ -1,12 +1,9 @@
-use crate::components;
-use crate::entity::Entity;
 use crate::global::Global;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
 use crate::systems::audio::AudioSystem;
 use crate::systems::render::RenderSystem;
 
-use std::path::Path;
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
 use winit::event::{Event, WindowEvent};
@@ -38,8 +35,8 @@ impl Engine {
     }
 
     pub fn run(mut self, event_loop: EventLoop<()>) {
-        self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
         self.scene.add_system(Box::new(AudioSystem::new(self.global.clone())));
+        self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
 
         let freq_millis = 1000 / self.fps;
 
