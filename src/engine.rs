@@ -83,13 +83,7 @@ impl Engine {
                     },
                     ..
                 } => {
-                    let global = self.global.clone();
-                    let mut global = global.lock().expect("Could not unlock global object");
-                    global.signals.insert("mouse_click".to_string(), true);
-
-                    if self.input.is_valid_cursor_position() {
-                        println!("({}, {})", self.input.cursor[0], self.input.cursor[1]);
-                    }
+                    self.input.click();
                 },
 
                 Event::WindowEvent {
@@ -99,32 +93,7 @@ impl Engine {
                     },
                     ..
                 } => {
-                    let dims: (u32, u32);
-                    let origin: (u32, u32);
-
-                    {
-                        let global = self.global.clone();
-                        let global = global.lock().expect("Could not unlock global object");
-                        dims = global.view_size;
-                        origin = global.view_origin;
-                    }
-
-                    let real_dims: [f32; 2] = [dims.0 as f32, dims.1 as f32];
-                    let view_dims: [f32; 2] = [
-                        real_dims[0] - 2.0 * origin.0 as f32,
-                        real_dims[1] - 2.0 * origin.1 as f32,
-                    ];
-
-                    let mut pos: [f32; 2] = position.into();
-                    pos = [
-                        (2.0 * (pos[0] - real_dims[0] / 2.0) / real_dims[0]) as f32,
-                        (2.0 * (pos[1] - real_dims[1] / 2.0) / real_dims[1]) as f32,
-                    ];
-                    pos[0] *= real_dims[0] / view_dims[0];
-                    pos[1] *= real_dims[1] / view_dims[1];
-
-                    self.input.cursor = pos;
-                    println!("{}, {}", pos[0], pos[1]);
+                    self.input.cursor_moved(position);
                 }
 
                 Event::RedrawEventsCleared => {
