@@ -71,9 +71,7 @@ impl Engine {
                         ..
                     },
                     ..
-                } => {
-                    self.input.handle_input(input);
-                }
+                } => { self.input.handle_input(input); }
 
                 Event::WindowEvent {
                     event: WindowEvent::MouseInput {
@@ -81,9 +79,7 @@ impl Engine {
                         ..
                     },
                     ..
-                } => {
-                    self.input.click();
-                },
+                } => { self.input.click(); },
 
                 Event::WindowEvent {
                     event: WindowEvent::CursorMoved {
@@ -91,9 +87,7 @@ impl Engine {
                         ..
                     },
                     ..
-                } => {
-                    self.input.cursor_moved(position);
-                }
+                } => { self.input.cursor_moved(position); }
 
                 Event::RedrawEventsCleared => {
                     for system in self.scene.systems.iter_mut() {
