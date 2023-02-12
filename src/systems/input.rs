@@ -56,6 +56,14 @@ impl InputSystem {
             },
             _ => {},
         }
+
+        let global = self.global.clone();
+        let mut global = global.lock().expect("Could not unlock global object");
+
+        global.signals.insert("up_pressed".to_string(), self.up);
+        global.signals.insert("down_pressed".to_string(), self.down);
+        global.signals.insert("left_pressed".to_string(), self.left);
+        global.signals.insert("right_pressed".to_string(), self.right);
     }
 
     pub fn cursor_moved(&mut self, position: PhysicalPosition<f64>) {
