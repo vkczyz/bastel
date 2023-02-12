@@ -41,7 +41,6 @@ impl Engine {
     pub fn run(mut self, event_loop: EventLoop<()>) {
         let freq_millis = 1000 / self.fps;
 
-        self.scene.add_system(Box::new(InputSystem::new(self.global.clone())));
         self.scene.add_system(Box::new(AudioSystem::new(self.global.clone())));
         self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
 
