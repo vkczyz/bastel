@@ -1,10 +1,12 @@
 use crate::global::Global;
 use crate::renderer::Renderer;
 use crate::scene::Scene;
+use crate::systems::System;
 use crate::systems::input::InputSystem;
 use crate::systems::render::RenderSystem;
 use crate::systems::audio::AudioSystem;
 use crate::systems::physics::PhysicsSystem;
+use crate::systems::movement::MovementSystem;
 
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
@@ -42,10 +44,16 @@ impl Engine {
     pub fn run(mut self, event_loop: EventLoop<()>) {
         let freq_millis = 1000 / self.fps;
 
-        self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
-        self.scene.add_system(Box::new(AudioSystem::new(self.global.clone())));
-        self.scene.add_system(Box::new(PhysicsSystem::new(self.global.clone())));
+        // Initialize systems
+        let systems: Vec<Box<dyn System>> = vec![
+            Box::new(RenderSystem::new(self.renderer, self.global.clone())),
+            Box::new(AudioSystem::new(self.global.clone())),
+            Box::new(PhysicsSystem::new(self.global.clone())),
+            Box::new(MovementSystem::new(self.global.clone())),
+        ];
+        for system in systems { self.scene.add_system(system) }
 
+        // Event loop
         event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::WaitUntil(
                 Instant::now() + Duration::from_millis(freq_millis)

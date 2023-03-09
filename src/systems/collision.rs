@@ -63,3 +63,23 @@ impl CollisionSystem {
         }
         */
 }
+
+/*
+impl System for AudioSystem {
+    fn run(&mut self, entities: &mut [Arc<Mutex<Entity>>]) {
+
+    }
+}
+*/
+
+pub enum Axis {
+    X,
+    Y,
+}
+
+pub enum Edge {
+    Left,
+    Right,
+    Top,
+    Bottom,
+}

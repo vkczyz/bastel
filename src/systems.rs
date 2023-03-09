@@ -3,6 +3,7 @@ pub mod collision;
 pub mod input;
 pub mod physics;
 pub mod render;
+pub mod movement;
 
 use crate::entity::Entity;
 use std::sync::Arc;

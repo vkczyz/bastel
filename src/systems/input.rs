@@ -64,6 +64,7 @@ impl InputSystem {
         global.signals.insert("down_pressed".to_string(), self.down);
         global.signals.insert("left_pressed".to_string(), self.left);
         global.signals.insert("right_pressed".to_string(), self.right);
+
     }
 
     pub fn cursor_moved(&mut self, position: PhysicalPosition<f64>) {
@@ -109,34 +110,7 @@ impl InputSystem {
         true
     }
 
-    /*
-    pub fn handle_movement(&self, player: &mut Entity, strength: (f32, f32)) {
-        let force = get_vector_normalised((
-            0.0 + (self.right as i32 as f32) - (self.left as i32 as f32),
-            0.0 + (self.down as i32 as f32),
-        ));
-        let force = (force.0 * strength.0, force.1 * strength.1);
-        //player.physics.apply_force(force);
-    }
-    */
 }
-
-/*
-fn get_vector_magnitude(v: (f32, f32)) -> f32 {
-    ((v.0 * v.0) + (v.1 * v.1)).sqrt()
-}
-
-fn get_vector_normalised(v: (f32, f32)) -> (f32, f32) {
-    let mag = get_vector_magnitude(v);
-    match mag == 0.0 {
-        true => (0.0, 0.0),
-        false => (
-            v.0 / mag,
-            v.1 / mag,
-        ),
-    }
-}
-*/
 
 impl System for InputSystem {
     fn run(&mut self, _entities: &mut [Arc<Mutex<Entity>>]) { }

@@ -1,4 +1,5 @@
 use crate::components::audio::AudioComponent;
+use crate::components::moveable::MoveableComponent;
 use crate::components::position::PositionComponent;
 use crate::components::sprite::SpriteComponent;
 use crate::components::physics::PhysicsComponent;
@@ -41,6 +42,7 @@ impl Entity {
                     "position" => components.push(PositionComponent::from_xml(n)),
                     "sprite" => components.push(SpriteComponent::from_xml(n)),
                     "physics" => components.push(PhysicsComponent::from_xml(n)),
+                    "moveable" => components.push(MoveableComponent::new()),
                     _ => (),
                 }
             }
@@ -53,16 +55,4 @@ impl Entity {
             }
         ))
     }
-}
-
-pub enum Axis {
-    X,
-    Y,
-}
-
-pub enum Edge {
-    Left,
-    Right,
-    Top,
-    Bottom,
 }
