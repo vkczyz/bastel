@@ -139,5 +139,5 @@ fn get_vector_normalised(v: (f32, f32)) -> (f32, f32) {
 */
 
 impl System for InputSystem {
-    fn run(&mut self, entities: &mut [Arc<Mutex<Entity>>]) { }
+    fn run(&mut self, _entities: &mut [Arc<Mutex<Entity>>]) { }
 }

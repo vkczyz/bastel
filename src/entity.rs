@@ -2,9 +2,8 @@ use crate::components::audio::AudioComponent;
 use crate::components::position::PositionComponent;
 use crate::components::sprite::SpriteComponent;
 use crate::components::physics::PhysicsComponent;
-use crate::components::{Component, self};
+use crate::components::Component;
 use std::sync::{Arc, Mutex};
-use std::mem::{discriminant, Discriminant};
 
 pub struct Entity {
     pub id: u32,
@@ -66,18 +65,4 @@ pub enum Edge {
     Right,
     Top,
     Bottom,
-}
-
-fn min_f32(a: f32, b: f32) -> f32 {
-    match a <= b {
-        true => a,
-        false => b,
-    }
-}
-
-fn max_f32(a: f32, b: f32) -> f32 {
-    match a >= b {
-        true => a,
-        false => b,
-    }
 }
