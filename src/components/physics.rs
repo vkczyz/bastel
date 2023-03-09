@@ -69,29 +69,23 @@ impl PhysicsComponent {
     }
 
     pub fn from_xml(data: roxmltree::Node) -> Component {
-        /*
-        let mut x = f32::NAN;
-        let mut y = f32::NAN;
-        let mut width = f32::NAN;
-        let mut height = f32::NAN;
+        let mut mass = 0.0;
+        let mut friction = 0.0;
+        let mut bounciness = 0.0;
 
         data.attributes()
             .map(|a| {
                 match a.name() {
-                    "x" => match a.value().parse::<f32>() {
-                        Ok(d) => x = d,
+                    "mass" => match a.value().parse::<f32>() {
+                        Ok(d) => mass = d,
                         Err(_) => (),
                     },
-                    "y" => match a.value().parse::<f32>() {
-                        Ok(d) => y = d,
+                    "friction" => match a.value().parse::<f32>() {
+                        Ok(d) => friction = d,
                         Err(_) => (),
                     },
-                    "width" => match a.value().parse::<f32>() {
-                        Ok(d) => width = d,
-                        Err(_) => (),
-                    },
-                    "height" => match a.value().parse::<f32>() {
-                        Ok(d) => height = d,
+                    "bounciness" => match a.value().parse::<f32>() {
+                        Ok(d) => bounciness = d,
                         Err(_) => (),
                     },
                     _ => (),
@@ -99,26 +93,13 @@ impl PhysicsComponent {
             }
         ).for_each(drop);
 
-        let position = (x, y);
-        let size = (width, height);
-
-        Component::Position(
-            PositionComponent {
-                vertices: generate_vertices(position, size),
-                indices: generate_indices(),
-                position,
-                size,
-            }
-        )
-        */
-
         Component::Physics(
             PhysicsComponent {
-                mass: 1.0,
+                mass,
+                friction,
+                bounciness,
                 acceleration: (0.0, 0.0),
                 velocity: (0.0, 0.0),
-                friction: 0.5,
-                bounciness: 1.0,
             }
         )
     }
