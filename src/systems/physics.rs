@@ -1,59 +1,81 @@
 use crate::global::Global;
+use crate::components::physics::PhysicsComponent;
+use crate::components::position::PositionComponent;
 use crate::entity::Entity;
+use crate::components::Component;
 use crate::systems::System;
 use std::sync::{Arc, Mutex};
 
-pub struct PhysicsSystem { }
+pub struct PhysicsSystem {
+    pub external_force: (f32, f32),
+}
 
 impl PhysicsSystem {
-    pub fn new(global: Arc<Mutex<Global>>) -> Self {
-        PhysicsSystem { }
+    pub fn new(global: Arc<Mutex<Global>>, external_force: (f32, f32)) -> Self {
+        PhysicsSystem {
+            external_force,
+        }
     }
 
-    /*
-    pub fn update(&mut self) {
-        self.velocity.0 += self.acceleration.0;
-        self.velocity.1 += self.acceleration.1;
-    }
+    fn update_position(&mut self, physics: &mut PhysicsComponent, position: &mut PositionComponent) {
+        /*
+        let units = (
+            1.0 / self.view_size.0 as f32,
+            1.0 / self.view_size.1 as f32,
+        );
+        */
 
-    pub fn bounce_x(&mut self) {
-        self.acceleration.0 *= -self.bounciness;
-        self.velocity.0 *= -self.bounciness;
-    }
+        // Apply external forces (e.g. gravity)
+        physics.apply_force(self.external_force);
 
-    pub fn bounce_y(&mut self) {
-        self.acceleration.1 *= -self.bounciness;
-        self.velocity.1 *= -self.bounciness;
-    }
+        /*
+        // Apply input forces
+        input.handle_movement(
+            entity,
+            (
+                units.0,
+                units.1,
+            ),
+        );
 
-    pub fn friction_x(&mut self) {
-        let f = self.mass * self.velocity.0 * self.friction;
-        self.apply_force((-f, 0.0));
-    }
+        // Apply jump (if requested)
+        if input.up {
+            let curve = 1.0;
+            let force = (
+                0.0,
+                units.1 * -12.0 / (curve + entity.airtime as f32),
+            );
+            if force.1 < 1.0 {
+                entity.physics.apply_force(force);
+            }
+        }
+        */
 
-    pub fn friction_y(&mut self) {
-        let f = self.mass * self.velocity.1 * self.friction;
-        self.apply_force((0.0, -f));
-    }
+        //entity.airtime += 1;
 
-    pub fn apply_force(&mut self, force: (f32, f32)) {
-        self.acceleration.0 += force.0 / self.mass;
-        self.acceleration.1 += force.1 / self.mass;
-    }
+        physics.update();
 
-    pub fn get_displacement(&self) -> (f32, f32) {
-        let displacement = (self.velocity.0, self.velocity.1);
-        displacement
-    }
+        let displ = physics.get_displacement();
+        println!("({}, {})", displ.0, displ.1);
+        position.shift(displ.0, displ.1);
 
-    pub fn reset(&mut self) {
-        self.acceleration = (0.0, 0.0);
+        physics.reset();
     }
-    */
 }
 
 impl System for PhysicsSystem {
     fn run(&mut self, entities: &mut [Arc<Mutex<Entity>>]) {
+        for entity in entities {
+            let unlocked_entity = entity.clone();
+            let mut unlocked_entity = unlocked_entity.lock().expect("Could not acquire entity");
+            let components = &mut unlocked_entity.components.iter_mut();
 
+            // Process entities with PhysicsComponent
+            if let Some(Component::Position(position)) = components.find(|c| if let Component::Position(_) = c { true } else { false }) {
+                if let Some(Component::Physics(physics)) = components.find(|c| if let Component::Physics(_) = c { true } else { false }) {
+                    self.update_position(physics, position)
+                }
+            }
+        }
     }
 }

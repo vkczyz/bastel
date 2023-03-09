@@ -1,6 +1,7 @@
 use crate::components::audio::AudioComponent;
 use crate::components::position::PositionComponent;
 use crate::components::sprite::SpriteComponent;
+use crate::components::physics::PhysicsComponent;
 use crate::components::{Component, self};
 use std::sync::{Arc, Mutex};
 use std::mem::{discriminant, Discriminant};
@@ -40,6 +41,7 @@ impl Entity {
                     "audio" => components.push(AudioComponent::from_xml(n)),
                     "position" => components.push(PositionComponent::from_xml(n)),
                     "sprite" => components.push(SpriteComponent::from_xml(n)),
+                    "physics" => components.push(PhysicsComponent::from_xml(n)),
                     _ => (),
                 }
             }

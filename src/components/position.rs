@@ -62,6 +62,12 @@ impl PositionComponent {
             }
         )
     }
+
+    pub fn shift(&mut self, x: f32, y: f32) {
+        self.position.0 += x;
+        self.position.1 += y;
+        self.vertices = generate_vertices(self.position, self.size);
+    }
 }
 
 fn generate_vertices(position: (f32, f32), size: (f32, f32)) -> Vec<Vertex> {
