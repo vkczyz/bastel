@@ -44,7 +44,7 @@ impl Engine {
 
         self.scene.add_system(Box::new(RenderSystem::new(self.renderer, self.global.clone())));
         self.scene.add_system(Box::new(AudioSystem::new(self.global.clone())));
-        self.scene.add_system(Box::new(PhysicsSystem::new(self.global.clone(), (0.0, 0.001))));
+        self.scene.add_system(Box::new(PhysicsSystem::new(self.global.clone())));
 
         event_loop.run(move |event, _, control_flow| {
             *control_flow = ControlFlow::WaitUntil(

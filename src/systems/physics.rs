@@ -12,9 +12,9 @@ pub struct PhysicsSystem {
 }
 
 impl PhysicsSystem {
-    pub fn new(global: Arc<Mutex<Global>>, external_force: (f32, f32)) -> Self {
+    pub fn new(global: Arc<Mutex<Global>>) -> Self {
         PhysicsSystem {
-            external_force,
+            external_force: (0.0, 0.0),
             global,
         }
     }
@@ -68,15 +68,23 @@ impl PhysicsSystem {
 impl System for PhysicsSystem {
     fn run(&mut self, entities: &mut [Arc<Mutex<Entity>>]) {
         for entity in entities {
+            let mut position = None;
+            let mut physics = None;
+
             let unlocked_entity = entity.clone();
             let mut unlocked_entity = unlocked_entity.lock().expect("Could not acquire entity");
-            let components = &mut unlocked_entity.components.iter_mut();
+            let components = &mut unlocked_entity.components;
 
-            // Process entities with PhysicsComponent
-            if let Some(Component::Position(position)) = components.find(|c| if let Component::Position(_) = c { true } else { false }) {
-                if let Some(Component::Physics(physics)) = components.find(|c| if let Component::Physics(_) = c { true } else { false }) {
-                    self.update_position(physics, position)
+            for component in components.iter_mut() {
+                match component {
+                    Component::Position(c) => position = Some(c),
+                    Component::Physics(c) => physics = Some(c),
+                    _ => {},
                 }
+            }
+
+            if let (Some(physics), Some(position)) = (physics, position) {
+                self.update_position(physics, position)
             }
         }
     }

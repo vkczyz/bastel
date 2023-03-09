@@ -131,44 +131,53 @@ impl System for RenderSystem {
             let components = &unlocked_entity.components;
 
             // Entities need a SpriteComponent and a PositionComponent in order to be drawn
-            if let Some(Component::Sprite(sprite)) = components.iter().find(|c| if let Component::Sprite(_) = c { true } else { false }) {
-                if let Some(Component::Position(position)) = components.iter().find(|c| if let Component::Position(_) = c { true } else { false }) {
-                    let vertices = Renderer::create_vertex_buffer(position.vertices.clone(), &self.renderer.device);
-                    let indices = CpuAccessibleBuffer::from_iter(self.renderer.device.clone(), BufferUsage::all(), false, position.indices.clone())
-                        .expect("Failed to create buffer");
-                    let pipeline = self.renderer.pipelines[&sprite.shader].clone();
+            let mut position = None;
+            let mut sprite = None;
 
-                    builder
-                        .bind_pipeline_graphics(pipeline.clone());
-
-                    if let (Shader::Texture, Some(s)) = (&sprite.shader, &sprite.texture) {
-                        let (texture, texture_future) = self.renderer.create_texture(s);
-                        let layout = pipeline.layout().descriptor_set_layouts().get(0).unwrap();
-                        let set = PersistentDescriptorSet::new(
-                            layout.clone(),
-                            [WriteDescriptorSet::image_view_sampler(
-                                0,
-                                texture,
-                                self.renderer.sampler.clone(),
-                            )],
-                        ).unwrap();
-
-                        self.previous_frame_end = Some(texture_future.boxed());
-
-                        builder.bind_descriptor_sets(
-                            PipelineBindPoint::Graphics,
-                            pipeline.layout().clone(),
-                            0,
-                            set.clone(),
-                        );
-                    }
-
-                    builder
-                        .bind_vertex_buffers(0, vertices.clone())
-                        .bind_index_buffer(indices.clone())
-                        .draw_indexed(indices.len() as u32, vertices.len() as u32, 0, 0, 0)
-                        .unwrap();
+            for component in components.iter() {
+                match component {
+                    Component::Position(c) => position = Some(c),
+                    Component::Sprite(c) => sprite = Some(c),
+                    _ => {},
                 }
+            }
+
+            if let (Some(position), Some(sprite)) = (position, sprite) {
+                let vertices = Renderer::create_vertex_buffer(position.vertices.clone(), &self.renderer.device);
+                let indices = CpuAccessibleBuffer::from_iter(self.renderer.device.clone(), BufferUsage::all(), false, position.indices.clone())
+                    .expect("Failed to create buffer");
+                let pipeline = self.renderer.pipelines[&sprite.shader].clone();
+
+                builder
+                    .bind_pipeline_graphics(pipeline.clone());
+
+                if let (Shader::Texture, Some(s)) = (&sprite.shader, &sprite.texture) {
+                    let (texture, texture_future) = self.renderer.create_texture(s);
+                    let layout = pipeline.layout().descriptor_set_layouts().get(0).unwrap();
+                    let set = PersistentDescriptorSet::new(
+                        layout.clone(),
+                        [WriteDescriptorSet::image_view_sampler(
+                            0,
+                            texture,
+                            self.renderer.sampler.clone(),
+                        )],
+                    ).unwrap();
+
+                    self.previous_frame_end = Some(texture_future.boxed());
+
+                    builder.bind_descriptor_sets(
+                        PipelineBindPoint::Graphics,
+                        pipeline.layout().clone(),
+                        0,
+                        set.clone(),
+                    );
+                }
+
+                builder
+                    .bind_vertex_buffers(0, vertices.clone())
+                    .bind_index_buffer(indices.clone())
+                    .draw_indexed(indices.len() as u32, vertices.len() as u32, 0, 0, 0)
+                    .unwrap();
             }
         }
 
