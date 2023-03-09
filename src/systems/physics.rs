@@ -8,22 +8,25 @@ use std::sync::{Arc, Mutex};
 
 pub struct PhysicsSystem {
     pub external_force: (f32, f32),
+    global: Arc<Mutex<Global>>,
 }
 
 impl PhysicsSystem {
     pub fn new(global: Arc<Mutex<Global>>, external_force: (f32, f32)) -> Self {
         PhysicsSystem {
             external_force,
+            global,
         }
     }
 
     fn update_position(&mut self, physics: &mut PhysicsComponent, position: &mut PositionComponent) {
-        /*
+        let global = self.global.clone();
+        let global = global.lock().expect("Could not unlock global object");
         let units = (
-            1.0 / self.view_size.0 as f32,
-            1.0 / self.view_size.1 as f32,
+            1.0 / global.view_size.0 as f32,
+            1.0 / global.view_size.1 as f32,
         );
-        */
+        drop(global);
 
         // Apply external forces (e.g. gravity)
         physics.apply_force(self.external_force);
@@ -56,7 +59,6 @@ impl PhysicsSystem {
         physics.update();
 
         let displ = physics.get_displacement();
-        println!("({}, {})", displ.0, displ.1);
         position.shift(displ.0, displ.1);
 
         physics.reset();
