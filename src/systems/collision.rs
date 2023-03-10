@@ -39,11 +39,9 @@ impl CollisionSystem {
         match edge {
             Edge::Left => {
                 pos_a.position.0 -= x_dist;
-                println!("left");
             },
             Edge::Right => {
                 pos_a.position.0 += x_dist;
-                println!("right");
             },
             Edge::Top => {
                 pos_a.position.1 -= y_dist;
@@ -52,11 +50,9 @@ impl CollisionSystem {
                     phys_a.airtime = 0;
                 }
                 */
-                println!("top");
             },
             Edge::Bottom => {
                 pos_a.position.1 += y_dist;
-                println!("bottom");
             },
         }
     }
@@ -76,6 +72,8 @@ impl System for CollisionSystem {
                 let mut pos_a = None;
                 let mut pos_b = None;
                 let mut phys_a = None;
+                let mut coll_a = false;
+                let mut coll_b = false;
 
                 let unlocked_a = a.clone();
                 let unlocked_b = b.clone();
@@ -89,6 +87,7 @@ impl System for CollisionSystem {
                 // Extract relevant components
                 for component in components_a.iter_mut() {
                     match component {
+                        Component::Collision(c) => coll_a = true,
                         Component::Position(c) => pos_a = Some(c),
                         Component::Physics(c) => phys_a = Some(c),
                         _ => {},
@@ -97,10 +96,14 @@ impl System for CollisionSystem {
 
                 for component in components_b.iter_mut() {
                     match component {
+                        Component::Collision(c) => coll_b = true,
                         Component::Position(c) => pos_b = Some(c),
                         _ => {},
                     }
                 }
+
+                // Both entities must be collideable
+                if !(coll_a && coll_b) { continue }
 
                 if let (Some(pos_a), Some(pos_b), Some(phys_a)) = (pos_a, pos_b, phys_a) {
                     if !are_colliding(pos_a, pos_b) { continue }
