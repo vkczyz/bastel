@@ -1,11 +1,13 @@
 use crate::components::Component;
 
+#[derive(PartialEq)]
 pub struct PhysicsComponent {
     pub mass: f32,
     pub acceleration: (f32, f32),
     pub velocity: (f32, f32),
     pub friction: f32,
     pub bounciness: f32,
+    pub airtime: u32,
 }
 
 impl PhysicsComponent {
@@ -16,6 +18,7 @@ impl PhysicsComponent {
             velocity: (0.0, 0.0),
             friction,
             bounciness,
+            airtime: 0,
         }
     }
 
@@ -26,6 +29,7 @@ impl PhysicsComponent {
             velocity: (0.0, 0.0),
             friction: 0.5,
             bounciness: 1.0,
+            airtime: 0,
         }
     }
 
@@ -100,6 +104,7 @@ impl PhysicsComponent {
                 bounciness,
                 acceleration: (0.0, 0.0),
                 velocity: (0.0, 0.0),
+                airtime: 0,
             }
         )
     }

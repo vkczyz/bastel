@@ -16,6 +16,7 @@ use crate::components::{
     sprite::SpriteComponent,
 };
 
+#[derive(PartialEq)]
 pub enum Component {
     Audio(AudioComponent),
     Collision(CollisionComponent),

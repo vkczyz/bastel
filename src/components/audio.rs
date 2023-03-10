@@ -2,6 +2,7 @@ use crate::components::Component;
 use roxmltree;
 
 #[allow(dead_code)]
+#[derive(PartialEq)]
 pub struct AudioComponent {
     pub muted: bool,
     pub bgm: Option<String>,

@@ -5,6 +5,7 @@ use std::fs;
 use std::num::ParseIntError;
 use std::path::Path;
 
+#[derive(PartialEq)]
 pub struct SpriteComponent {
     pub shader: Shader,
     pub color: [f32; 3],
@@ -195,22 +196,6 @@ impl SpriteComponent {
                 uv: [1.0, 0.0],
             },
         );
-    }
-
-    pub fn get_left_pos(&self) -> f32 {
-        self.position.0
-    }
-
-    pub fn get_right_pos(&self) -> f32 {
-        self.position.0 + self.size.0
-    }
-
-    pub fn get_top_pos(&self) -> f32 {
-        self.position.1
-    }
-
-    pub fn get_bottom_pos(&self) -> f32 {
-        self.position.1 + self.size.1
     }
     */
 }

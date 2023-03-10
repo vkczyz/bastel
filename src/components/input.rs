@@ -2,6 +2,7 @@ use crate::entity::Entity;
 
 use winit::event::{ElementState, KeyboardInput};
 
+#[derive(PartialEq)]
 pub struct InputComponent {
     pub cursor: [f32; 2],
     pub up: bool,

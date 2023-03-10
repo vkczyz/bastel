@@ -7,6 +7,7 @@ use crate::systems::render::RenderSystem;
 use crate::systems::audio::AudioSystem;
 use crate::systems::physics::PhysicsSystem;
 use crate::systems::movement::MovementSystem;
+use crate::systems::collision::CollisionSystem;
 
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex};
@@ -50,6 +51,7 @@ impl Engine {
             Box::new(AudioSystem::new(self.global.clone())),
             Box::new(PhysicsSystem::new(self.global.clone())),
             Box::new(MovementSystem::new(self.global.clone())),
+            Box::new(CollisionSystem::new()),
         ];
         for system in systems { self.scene.add_system(system) }
 

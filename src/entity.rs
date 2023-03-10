@@ -6,6 +6,7 @@ use crate::components::physics::PhysicsComponent;
 use crate::components::Component;
 use std::sync::{Arc, Mutex};
 
+#[derive(PartialEq)]
 pub struct Entity {
     pub id: u32,
     pub components: Vec<Component>,

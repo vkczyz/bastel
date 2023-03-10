@@ -1,6 +1,7 @@
 use crate::components::Component;
 use crate::vertex::Vertex;
 
+#[derive(PartialEq)]
 pub struct PositionComponent {
     pub position: (f32, f32),
     pub size: (f32, f32),
@@ -67,6 +68,22 @@ impl PositionComponent {
         self.position.0 += x;
         self.position.1 += y;
         self.vertices = generate_vertices(self.position, self.size);
+    }
+
+    pub fn get_left_pos(&self) -> f32 {
+        self.position.0
+    }
+
+    pub fn get_right_pos(&self) -> f32 {
+        self.position.0 + self.size.0
+    }
+
+    pub fn get_top_pos(&self) -> f32 {
+        self.position.1
+    }
+
+    pub fn get_bottom_pos(&self) -> f32 {
+        self.position.1 + self.size.1
     }
 }
 
