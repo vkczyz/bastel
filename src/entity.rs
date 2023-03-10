@@ -1,9 +1,10 @@
+use crate::components::Component;
 use crate::components::audio::AudioComponent;
 use crate::components::moveable::MoveableComponent;
 use crate::components::position::PositionComponent;
 use crate::components::sprite::SpriteComponent;
 use crate::components::physics::PhysicsComponent;
-use crate::components::Component;
+use crate::components::collision::CollisionComponent;
 use std::sync::{Arc, Mutex};
 
 #[derive(PartialEq)]
@@ -44,6 +45,7 @@ impl Entity {
                     "sprite" => components.push(SpriteComponent::from_xml(n)),
                     "physics" => components.push(PhysicsComponent::from_xml(n)),
                     "moveable" => components.push(MoveableComponent::new()),
+                    "collision" => components.push(CollisionComponent::new()),
                     _ => (),
                 }
             }

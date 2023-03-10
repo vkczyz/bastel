@@ -39,9 +39,11 @@ impl CollisionSystem {
         match edge {
             Edge::Left => {
                 pos_a.position.0 -= x_dist;
+                println!("left");
             },
             Edge::Right => {
                 pos_a.position.0 += x_dist;
+                println!("right");
             },
             Edge::Top => {
                 pos_a.position.1 -= y_dist;
@@ -50,9 +52,11 @@ impl CollisionSystem {
                     phys_a.airtime = 0;
                 }
                 */
+                println!("top");
             },
             Edge::Bottom => {
                 pos_a.position.1 += y_dist;
+                println!("bottom");
             },
         }
     }
@@ -60,70 +64,50 @@ impl CollisionSystem {
 
 impl System for CollisionSystem {
     fn run(&mut self, entities: &mut [Arc<Mutex<Entity>>]) {
-        // Select a list of the relevant components
-        let entities: Vec<&mut Arc<Mutex<Entity>>> = entities
-            .iter_mut()
-            .filter(|e| {
-                let mut collision = false;
-                let mut position = false;
+        let entities = entities.to_vec();
 
-                let unlocked_entity = e.clone();
-                let mut unlocked_entity = unlocked_entity.lock().expect("Could not acquire entity");
-                let components = &mut unlocked_entity.components;
+        // Check for collisions between all eligible entities
+        for a in entities.iter() {
+            for b in entities.iter() {
+                // Don't check an entity against itself
+                if Arc::ptr_eq(a, b) { continue }
 
-                for component in components.iter() {
+                // Only entity A needs a PhysicsComponent, as it is the collider
+                let mut pos_a = None;
+                let mut pos_b = None;
+                let mut phys_a = None;
+
+                let unlocked_a = a.clone();
+                let unlocked_b = b.clone();
+
+                let mut unlocked_a = unlocked_a.lock().expect("Could not acquire entity");
+                let mut unlocked_b = unlocked_b.lock().expect("Could not acquire entity");
+
+                let components_a = &mut unlocked_a.components;
+                let components_b = &mut unlocked_b.components;
+
+                // Extract relevant components
+                for component in components_a.iter_mut() {
                     match component {
-                        Component::Collision(_) => collision = true,
-                        Component::Position(_) => position = true,
+                        Component::Position(c) => pos_a = Some(c),
+                        Component::Physics(c) => phys_a = Some(c),
                         _ => {},
                     }
                 }
 
-                collision && position
-            })
-            .collect();
-
-        // Check for collisions between all eligible entities
-        //for (&(pos_a, phys_a), (pos_b, physB)) in entities.iter().zip(entities) {
-        for (a, b) in entities.iter().zip(&entities) {
-            // Only entity A needs a PhysicsComponent, as it is the collider
-            let mut pos_a = None;
-            let mut pos_b = None;
-            let mut phys_a = None;
-
-            let unlocked_a = a.clone();
-            let mut unlocked_a = unlocked_a.lock().expect("Could not acquire entity");
-
-            let unlocked_b = b.clone();
-            let mut unlocked_b = unlocked_b.lock().expect("Could not acquire entity");
-
-            // Don't check an entity against itself
-            if *unlocked_a == *unlocked_b { continue }
-
-            let components_a = &mut unlocked_a.components;
-            let components_b = &mut unlocked_b.components;
-
-            // Extract relevant components
-            for component in components_a.iter_mut() {
-                match component {
-                    Component::Position(c) => pos_a = Some(c),
-                    Component::Physics(c) => phys_a = Some(c),
-                    _ => {},
+                for component in components_b.iter_mut() {
+                    match component {
+                        Component::Position(c) => pos_b = Some(c),
+                        _ => {},
+                    }
                 }
-            }
 
-            for component in components_b.iter_mut() {
-                match component {
-                    Component::Position(c) => pos_b = Some(c),
-                    _ => {},
+                if let (Some(pos_a), Some(pos_b), Some(phys_a)) = (pos_a, pos_b, phys_a) {
+                    if !are_colliding(pos_a, pos_b) { continue }
+
+                    let intersection = get_collision_intersection(pos_a, pos_b);
+                    self.handle_collision(&intersection, (pos_a, phys_a), pos_b);
                 }
-            }
-
-            if let (Some(pos_a), Some(pos_b), Some(phys_a)) = (pos_a, pos_b, phys_a) {
-                if !are_colliding(pos_a, pos_b) { continue }
-
-                let intersection = get_collision_intersection(pos_a, pos_b);
-                self.handle_collision(&intersection, (pos_a, phys_a), pos_b);
             }
         }
     }
