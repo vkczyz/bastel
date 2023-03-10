@@ -20,6 +20,11 @@ impl PhysicsSystem {
     }
 
     fn update_position(&mut self, physics: &mut PhysicsComponent, position: &mut PositionComponent) {
+        // Apply external forces (e.g. gravity)
+        physics.apply_force(self.external_force);
+
+        /*
+        // Set units
         let global = self.global.clone();
         let global = global.lock().expect("Could not unlock global object");
         let units = (
@@ -28,18 +33,6 @@ impl PhysicsSystem {
         );
         drop(global);
 
-        // Apply external forces (e.g. gravity)
-        physics.apply_force(self.external_force);
-
-        /*
-        // Apply input forces
-        input.handle_movement(
-            entity,
-            (
-                units.0,
-                units.1,
-            ),
-        );
 
         // Apply jump (if requested)
         if input.up {

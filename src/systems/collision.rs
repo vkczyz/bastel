@@ -87,7 +87,7 @@ impl System for CollisionSystem {
                 // Extract relevant components
                 for component in components_a.iter_mut() {
                     match component {
-                        Component::Collision(c) => coll_a = true,
+                        Component::Collision(_) => coll_a = true,
                         Component::Position(c) => pos_a = Some(c),
                         Component::Physics(c) => phys_a = Some(c),
                         _ => {},
@@ -96,7 +96,7 @@ impl System for CollisionSystem {
 
                 for component in components_b.iter_mut() {
                     match component {
-                        Component::Collision(c) => coll_b = true,
+                        Component::Collision(_) => coll_b = true,
                         Component::Position(c) => pos_b = Some(c),
                         _ => {},
                     }

@@ -13,6 +13,39 @@ pub struct SpriteComponent {
 }
 
 impl SpriteComponent {
+    pub fn from_xml(data: roxmltree::Node) -> Component {
+        let mut shader = Shader::Rainbow;
+        let mut color = "#000000";
+        let mut texture = None;
+
+        data.attributes()
+            .map(|a| {
+                match a.name() {
+                    "shader" => match a.value() {
+                        "solid" => shader = Shader::Solid,
+                        "texture" => shader = Shader::Texture,
+                        "rainbow" => shader = Shader::Rainbow,
+                        _ => shader = Shader::Rainbow,
+                    },
+                    "color" => color = a.value(),
+                    "texture" => texture = fs::read(Path::new(a.value())).ok(),
+                    _ => (),
+                }
+            }
+        ).for_each(drop);
+
+        let color = decode_hex(color).unwrap_or(vec![0.0, 0.0, 0.0]);
+        let color = [color[0], color[1], color[2]];
+
+        Component::Sprite(
+            SpriteComponent {
+                shader,
+                color,
+                texture,
+            }
+        )
+    }
+
     /*
     pub fn with_color(position: (f32, f32), size: (f32, f32), color: [f32; 3]) -> Component {
         let vertices = vec!(
@@ -135,67 +168,6 @@ impl SpriteComponent {
                 texture: None,
             }
         )
-    }
-    */
-
-    pub fn from_xml(data: roxmltree::Node) -> Component {
-        let mut shader = Shader::Rainbow;
-        let mut color = "#000000";
-        let mut texture = None;
-
-        data.attributes()
-            .map(|a| {
-                match a.name() {
-                    "shader" => match a.value() {
-                        "solid" => shader = Shader::Solid,
-                        "texture" => shader = Shader::Texture,
-                        "rainbow" => shader = Shader::Rainbow,
-                        _ => shader = Shader::Rainbow,
-                    },
-                    "color" => color = a.value(),
-                    "texture" => texture = fs::read(Path::new(a.value())).ok(),
-                    _ => (),
-                }
-            }
-        ).for_each(drop);
-
-        let color = decode_hex(color).unwrap_or(vec![0.0, 0.0, 0.0]);
-        let color = [color[0], color[1], color[2]];
-
-        Component::Sprite(
-            SpriteComponent {
-                shader,
-                color,
-                texture,
-            }
-        )
-    }
-
-    /*
-    pub fn change_position(&mut self, pos: (f32, f32)) {
-        self.position = pos;
-        self.vertices = vec!(
-            Vertex {
-                position: [pos.0, pos.1],
-                color: [0.0, 0.0, 0.0],
-                uv: [0.0, 0.0],
-            },
-            Vertex {
-                position: [pos.0, pos.1 + self.size.1],
-                color: [0.0, 0.0, 0.0],
-                uv: [0.0, 1.0],
-            },
-            Vertex {
-                position: [pos.0 + self.size.0, pos.1 + self.size.1],
-                color: [0.0, 0.0, 0.0],
-                uv: [1.0, 1.0],
-            },
-            Vertex {
-                position: [pos.0 + self.size.0, pos.1],
-                color: [0.0, 0.0, 0.0],
-                uv: [1.0, 0.0],
-            },
-        );
     }
     */
 }
